@@ -10,6 +10,7 @@ interface DealSectionProps {
   badgeColor?: "green" | "dim";
   allDeals?: Deal[];
   resolvedUrls?: Record<string, string>;
+  headerExtra?: ReactNode;
   children: ReactNode;
 }
 
@@ -102,7 +103,7 @@ function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; de
   );
 }
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, children }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, headerExtra, children }: DealSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -198,6 +199,9 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
           >
             View All
           </button>
+        )}
+        {headerExtra && (
+          <div style={{ marginLeft: "auto", flexShrink: 0 }}>{headerExtra}</div>
         )}
       </div>
 

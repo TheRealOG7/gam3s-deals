@@ -71,29 +71,24 @@ export function DealsClient({ deals, egs, images, urls, totalSavings, dealCount 
     );
   }
 
-  const savingsLabel = totalSavings >= 1
-    ? `Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`
-    : null;
+  const savingsBadge = totalSavings >= 1 ? (
+    <span style={{
+      fontSize: 10, fontWeight: 800, textTransform: "uppercase",
+      letterSpacing: "0.06em", padding: "3px 10px", borderRadius: 5,
+      background: "var(--green)", color: "#000",
+    }}>
+      {`Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`}
+    </span>
+  ) : null;
 
   return (
     <>
-      {savingsLabel && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 800, textTransform: "uppercase",
-            letterSpacing: "0.06em", padding: "3px 10px", borderRadius: 5,
-            background: "var(--green)", color: "#000",
-          }}>
-            {savingsLabel}
-          </span>
-        </div>
-      )}
-
       {epicGames.length > 0 && (
         <DealSection
           logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}
           badge="Free This Week"
           badgeColor="dim"
+          headerExtra={savingsBadge}
         >
           {epicGames.map((g) => (
             <EpicFreeCard
@@ -107,7 +102,7 @@ export function DealsClient({ deals, egs, images, urls, totalSavings, dealCount 
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls}>
+        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls} headerExtra={epicGames.length === 0 ? savingsBadge : undefined}>
           {bestDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
           ))}
