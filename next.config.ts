@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "media.rawg.io" },
       { protocol: "https", hostname: "*.rawg.io" },
+      { protocol: "https", hostname: "cdn.cloudflare.steamstatic.com" },
+      { protocol: "https", hostname: "shared.fastly.steamstatic.com" },
     ],
   },
 };
