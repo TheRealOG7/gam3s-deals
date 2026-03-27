@@ -72,24 +72,26 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
     );
   }
 
-  const savingsBadge = totalSavings >= 1 ? (
-    <span className="savings-badge" style={{
-      fontSize: 10, fontWeight: 800, textTransform: "uppercase",
-      letterSpacing: "0.06em", padding: "3px 10px", borderRadius: 5,
-      background: "var(--green)", color: "#000", whiteSpace: "nowrap",
-    }}>
-      {`Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`}
-    </span>
-  ) : null;
-
   return (
     <>
+      {totalSavings >= 1 && (
+        <div style={{ marginBottom: 20, textAlign: "center" }}>
+          <span className="savings-badge" style={{
+            display: "inline-block", fontSize: 10, fontWeight: 800,
+            textTransform: "uppercase", letterSpacing: "0.06em",
+            padding: "5px 14px", borderRadius: 5,
+            background: "var(--green)", color: "#000",
+          }}>
+            {`Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`}
+          </span>
+        </div>
+      )}
+
       {epicGames.length > 0 && (
         <DealSection
           logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}
           badge="Free This Week"
           badgeColor="dim"
-          headerExtra={savingsBadge}
         >
           {epicGames.map((g) => (
             <EpicFreeCard
@@ -103,7 +105,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls} resolvedReviews={reviews} headerExtra={epicGames.length === 0 ? savingsBadge : undefined}>
+        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls} resolvedReviews={reviews}>
           {bestDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}

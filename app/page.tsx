@@ -208,7 +208,19 @@ export default async function DealsPage() {
     ...(egs?.upcoming_free ?? []),
   ];
 
-  const uniqueDeals = [...new Map(allDeals.map((d) => [d.title, d])).values()];
+  // Deduplicate: normalize title (strip edition suffixes), keep highest-discount deal per game
+  function normTitle(t: string) {
+    return t
+      .replace(/\s*[-–:]\s*(deluxe|ultimate|standard|complete|gold|goty|game of the year|definitive|remastered|anniversary|enhanced|expanded|collector'?s?)\s*(edition|ed\.?)?\s*$/i, "")
+      .toLowerCase().trim();
+  }
+  const bestByTitle = new Map<string, Deal>();
+  for (const deal of allDeals) {
+    const key = normTitle(deal.title);
+    const ex = bestByTitle.get(key);
+    if (!ex || deal.savings_pct > ex.savings_pct) bestByTitle.set(key, deal);
+  }
+  const uniqueDeals = [...bestByTitle.values()];
 
   const [images, urls, reviews] = await Promise.all([
     resolveImages(uniqueDeals, epicGames),
@@ -216,7 +228,7 @@ export default async function DealsPage() {
     resolveReviews(uniqueDeals),
   ]);
 
-  // Total potential savings across all unique deals shown
+  // Total savings: one entry per unique game, using its best discount
   const totalSavings = uniqueDeals.reduce((sum, d) => {
     const saved = parseFloat(d.normal_price) - parseFloat(d.sale_price);
     return sum + (isNaN(saved) || saved < 0 ? 0 : saved);
