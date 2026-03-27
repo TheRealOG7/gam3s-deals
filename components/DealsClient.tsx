@@ -1,65 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { DealCard } from "@/components/DealCard";
 import { EpicFreeCard } from "@/components/EpicFreeCard";
 import { DealSection } from "@/components/DealSection";
 import { mergeDeals, timeAgo } from "@/lib/deals";
-import type { Deal, DealsData, EgsData, EpicGame } from "@/lib/deals";
-
-async function getImage(title: string): Promise<string | null> {
-  try {
-    const res = await fetch(`/api/rawg?q=${encodeURIComponent(title)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.image ?? null;
-  } catch {
-    return null;
-  }
-}
-
-function useDealImages(deals: Deal[]): Record<string, string | null> {
-  const [images, setImages] = useState<Record<string, string | null>>({});
-  useEffect(() => {
-    if (!deals.length) return;
-    deals.forEach((deal) => {
-      getImage(deal.title).then((img) => {
-        setImages((prev) => ({ ...prev, [deal.title]: img }));
-      });
-    });
-  }, [deals]);
-  return images;
-}
-
-function useEpicImages(games: EpicGame[]): Record<string, string | null> {
-  const [images, setImages] = useState<Record<string, string | null>>({});
-  useEffect(() => {
-    if (!games.length) return;
-    games.forEach((g) => {
-      getImage(g.title).then((img) => {
-        setImages((prev) => ({ ...prev, [g.title]: img }));
-      });
-    });
-  }, [games]);
-  return images;
-}
+import type { DealsData, EgsData } from "@/lib/deals";
 
 interface DealsClientProps {
   deals: DealsData | null;
   egs: EgsData | null;
+  images: Record<string, string | null>;
 }
 
-export function DealsClient({ deals, egs }: DealsClientProps) {
+export function DealsClient({ deals, egs, images }: DealsClientProps) {
   const bestDeals = deals ? mergeDeals(deals.best_deals, deals.gog_deals) : [];
   const epicGames = egs ? [...(egs.current_free ?? []), ...(egs.upcoming_free ?? [])] : [];
-
-  const bestImages = useDealImages(bestDeals);
-  const discountImages = useDealImages(deals?.biggest_discounts ?? []);
-  const ratedImages = useDealImages(deals?.top_rated ?? []);
-  const aaaImages = useDealImages(deals?.aaa_deals ?? []);
-  const psImages = useDealImages(deals?.ps_deals ?? []);
-  const epicImages = useEpicImages(epicGames);
 
   if (!deals && !egs) {
     return (
@@ -92,7 +48,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
               key={g.title}
               game={g}
               isCurrent={egs?.current_free?.some((c) => c.title === g.title) ?? false}
-              image={epicImages[g.title] ?? null}
+              image={images[g.title] ?? null}
             />
           ))}
         </DealSection>
@@ -102,7 +58,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       {bestDeals.length > 0 && (
         <DealSection title="Best Deals">
           {bestDeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={bestImages[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
           ))}
         </DealSection>
       )}
@@ -111,7 +67,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       {(deals?.biggest_discounts?.length ?? 0) > 0 && (
         <DealSection title="Biggest Discounts">
           {deals!.biggest_discounts.map((d) => (
-            <DealCard key={d.title} deal={d} image={discountImages[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
           ))}
         </DealSection>
       )}
@@ -120,7 +76,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       {(deals?.top_rated?.length ?? 0) > 0 && (
         <DealSection title="Top Rated on Sale" badge="★ 85%+" badgeColor="dim">
           {deals!.top_rated.map((d) => (
-            <DealCard key={d.title} deal={d} image={ratedImages[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
           ))}
         </DealSection>
       )}
@@ -129,7 +85,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       {(deals?.aaa_deals?.length ?? 0) > 0 && (
         <DealSection title="AAA on Sale">
           {deals!.aaa_deals.map((d) => (
-            <DealCard key={d.title} deal={d} image={aaaImages[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
           ))}
         </DealSection>
       )}
@@ -141,7 +97,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
           title="Deals"
         >
           {deals!.ps_deals.map((d) => (
-            <DealCard key={d.title} deal={d} image={psImages[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
           ))}
         </DealSection>
       )}
