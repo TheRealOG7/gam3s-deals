@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.rawg.io" },
       { protocol: "https", hostname: "cdn.cloudflare.steamstatic.com" },
       { protocol: "https", hostname: "shared.fastly.steamstatic.com" },
+      { protocol: "https", hostname: "cdn1.epicgames.com" },
+      { protocol: "https", hostname: "*.epicgames.com" },
     ],
   },
 };

@@ -12,6 +12,7 @@ export interface Deal {
   steam_rating_text?: string;
   steam_count?: number;
   metacritic?: number;
+  thumb?: string;
 }
 
 export interface DealsData {

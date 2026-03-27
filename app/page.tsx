@@ -27,10 +27,15 @@ async function resolveUrl(url: string): Promise<string> {
   }
 }
 
-// ── Steam CDN image ───────────────────────────────────────────────────────────
+// ── Steam CDN images ──────────────────────────────────────────────────────────
 function steamPortrait(steamUrl?: string): string | null {
   const m = steamUrl?.match(/\/app\/(\d+)/);
   return m ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${m[1]}/library_600x900.jpg` : null;
+}
+
+function steamCapsule(steamUrl?: string): string | null {
+  const m = steamUrl?.match(/\/app\/(\d+)/);
+  return m ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${m[1]}/capsule_616x353.jpg` : null;
 }
 
 // ── Concurrent batch runner ───────────────────────────────────────────────────
@@ -73,14 +78,20 @@ async function resolveImages(
 
   for (const deal of deals) {
     keys.push(deal.title);
-    const steamUrl = steamPortrait(deal.steam_url);
-    if (steamUrl) {
+    const portrait = steamPortrait(deal.steam_url);
+    const capsule = steamCapsule(deal.steam_url);
+    if (portrait && capsule) {
+      // Steam game: try portrait first, always fall back to capsule (universally available)
       fns.push(async () => {
-        const ok = await steamPortraitExists(steamUrl);
-        return ok ? steamUrl : lookupRawgImage(deal.title);
+        const ok = await steamPortraitExists(portrait);
+        return ok ? portrait : capsule;
       });
     } else {
-      fns.push(() => lookupRawgImage(deal.title));
+      // No steam_url: try RAWG, then fall back to deal's own thumbnail
+      fns.push(async () => {
+        const rawg = await lookupRawgImage(deal.title);
+        return rawg || deal.thumb || null;
+      });
     }
   }
   for (const g of epicGames) {
