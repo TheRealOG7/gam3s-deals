@@ -10,7 +10,11 @@ interface DealCardProps {
 }
 
 export function DealCard({ deal, image, href }: DealCardProps) {
-  const reviewText = deal.steam_rating_text;
+  const reviewText = deal.steam_rating_text
+    ? deal.steam_count
+      ? `${deal.steam_rating_text} (${deal.steam_count.toLocaleString()})`
+      : deal.steam_rating_text
+    : null;
 
   return (
     <a

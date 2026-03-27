@@ -97,8 +97,17 @@ async function resolveImages(
 async function resolveUrls(deals: Deal[]): Promise<Record<string, string>> {
   const keys = deals.map((d) => d.title);
   const fns = deals.map((deal) => () => {
-    if (deal.steam_url) return Promise.resolve(deal.steam_url);
-    return resolveUrl(deal.deal_url);
+    // If deal_url is already a direct store URL (GOG, PS Store, etc.), use it
+    if (deal.deal_url && !deal.deal_url.includes("cheapshark.com")) {
+      return Promise.resolve(deal.deal_url);
+    }
+    // Only use steam_url when the deal is actually on Steam (not just related to a Steam game)
+    if (deal.steam_url && deal.store_name === "Steam") {
+      return Promise.resolve(deal.steam_url);
+    }
+    // For all other cases (Gamesplanet, GreenManGaming, Fanatical, Epic, etc.)
+    // CheapShark uses a JS redirect that can't be followed server-side — use as-is
+    return Promise.resolve(deal.deal_url || "");
   });
   const results = await batch(fns, 8);
   const urls: Record<string, string> = {};
