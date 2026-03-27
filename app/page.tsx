@@ -55,10 +55,33 @@ async function batch<T>(fns: Array<() => Promise<T>>, concurrency = 5): Promise<
 // ── Steam review lookup (direct from Steam API — covers edition variants CheapShark misses) ──
 const steamReviewCache = new Map<string, { text: string; count: number } | null>();
 
-async function fetchSteamReview(steamUrl: string): Promise<{ text: string; count: number } | null> {
-  const m = steamUrl.match(/\/app\/(\d+)/);
-  if (!m) return null;
-  const appId = m[1];
+const steamSearchCache = new Map<string, string | null>();
+
+async function findSteamAppId(title: string): Promise<string | null> {
+  const key = title.toLowerCase();
+  if (steamSearchCache.has(key)) return steamSearchCache.get(key)!;
+  try {
+    const res = await fetch(
+      `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(title)}&l=english&cc=US`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (!res.ok) { steamSearchCache.set(key, null); return null; }
+    const data = await res.json();
+    const appId = data?.items?.[0]?.id?.toString() ?? null;
+    steamSearchCache.set(key, appId);
+    return appId;
+  } catch {
+    steamSearchCache.set(key, null);
+    return null;
+  }
+}
+
+async function fetchSteamReview(steamUrl: string | undefined, title: string): Promise<{ text: string; count: number } | null> {
+  // Get app ID from steam_url if available, otherwise search Steam by title
+  let appId: string | null = steamUrl?.match(/\/app\/(\d+)/)?.[1] ?? null;
+  if (!appId) appId = await findSteamAppId(title);
+  if (!appId) return null;
+
   if (steamReviewCache.has(appId)) return steamReviewCache.get(appId)!;
   try {
     const res = await fetch(
@@ -81,10 +104,11 @@ async function fetchSteamReview(steamUrl: string): Promise<{ text: string; count
 }
 
 async function resolveReviews(deals: Deal[]): Promise<Record<string, { text: string; count: number } | null>> {
-  const steamDeals = deals.filter((d) => d.steam_url);
-  const keys = steamDeals.map((d) => d.title);
-  const fns = steamDeals.map((d) => () => fetchSteamReview(d.steam_url!));
-  const results = await batch(fns, 8);
+  // Skip PlayStation deals — everything else gets Steam review lookup
+  const nonPsDeals = deals.filter((d) => d.store_name !== "PlayStation");
+  const keys = nonPsDeals.map((d) => d.title);
+  const fns = nonPsDeals.map((d) => () => fetchSteamReview(d.steam_url, d.title));
+  const results = await batch(fns, 6);
   const reviews: Record<string, { text: string; count: number } | null> = {};
   keys.forEach((k, i) => { reviews[k] = results[i]; });
   return reviews;
