@@ -69,9 +69,9 @@ export function DealCard({ deal, image }: DealCardProps) {
             ${deal.normal_price}
           </span>
         </div>
-        {deal.steam_score ? (
-          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2 }}>
-            ★ {deal.steam_score}%
+        {(deal.steam_score || deal.metacritic) ? (
+          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3 }}>
+            {deal.steam_score ? `★ ${deal.steam_score}%` : `MC ${deal.metacritic}`}
           </div>
         ) : null}
       </div>

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { DealCard } from "@/components/DealCard";
 import { EpicFreeCard } from "@/components/EpicFreeCard";
 import { DealSection } from "@/components/DealSection";
-import { timeAgo } from "@/lib/deals";
 import type { Deal, DealsData, EgsData } from "@/lib/deals";
 
 async function getImage(title: string): Promise<string | null> {
@@ -33,11 +32,38 @@ function useImages(titles: string[]): Record<string, string | null> {
   return images;
 }
 
-function dedupeDeals(deals: Deal[]): Deal[] {
+function normalizeTitle(title: string): string {
+  return title
+    .replace(/\s*[-–:]\s*(deluxe|ultimate|standard|complete|gold|goty|game of the year|definitive|remastered|anniversary|enhanced|expanded|collector'?s?)\s*(edition|ed\.?)?\s*$/i, "")
+    .toLowerCase()
+    .trim();
+}
+
+/** From all deals across all sections, keep only the best deal (highest savings_pct) per normalized title */
+function buildBestDeals(sections: Deal[][]): Map<string, Deal> {
+  const best = new Map<string, Deal>();
+  for (const section of sections) {
+    for (const deal of section ?? []) {
+      const key = normalizeTitle(deal.title);
+      const existing = best.get(key);
+      if (!existing || deal.savings_pct > existing.savings_pct) {
+        best.set(key, deal);
+      }
+    }
+  }
+  return best;
+}
+
+/** Filter a section to only include deals that ARE the best deal for their title */
+function filterBest(section: Deal[], bestMap: Map<string, Deal>): Deal[] {
   const seen = new Set<string>();
-  return deals.filter((d) => {
-    const key = d.title.toLowerCase();
+  return (section ?? []).filter((deal) => {
+    const key = normalizeTitle(deal.title);
     if (seen.has(key)) return false;
+    const best = bestMap.get(key);
+    if (!best) return false;
+    // Only include if this deal's title matches the chosen best deal
+    if (best.title !== deal.title) return false;
     seen.add(key);
     return true;
   });
@@ -49,31 +75,21 @@ interface DealsClientProps {
 }
 
 export function DealsClient({ deals, egs }: DealsClientProps) {
-  // Collect all seen titles globally to avoid cross-section duplication
-  const seenTitles = new Set<string>();
+  const allSections = deals ? [
+    deals.best_deals, deals.gog_deals, deals.biggest_discounts,
+    deals.top_rated, deals.aaa_deals, deals.ps_deals,
+  ] : [];
 
-  function filterSeen(list: Deal[]): Deal[] {
-    return (list ?? []).filter((d) => {
-      const key = d.title.toLowerCase();
-      if (seenTitles.has(key)) return false;
-      seenTitles.add(key);
-      return true;
-    });
-  }
+  const bestMap = buildBestDeals(allSections);
 
-  const bestDeals = deals
-    ? filterSeen(dedupeDeals([...(deals.best_deals ?? []), ...(deals.gog_deals ?? [])]))
-    : [];
-  const biggestDiscounts = deals ? filterSeen(deals.biggest_discounts ?? []) : [];
-  const topRated = deals ? filterSeen(deals.top_rated ?? []) : [];
-  const aaadeals = deals ? filterSeen(deals.aaa_deals ?? []) : [];
-  const psDeals = deals ? filterSeen(deals.ps_deals ?? []) : [];
+  const bestDeals = deals ? filterBest([...(deals.best_deals ?? []), ...(deals.gog_deals ?? [])], bestMap) : [];
+  const aaadeals = deals ? filterBest(deals.aaa_deals ?? [], bestMap) : [];
+  const psDeals = deals ? filterBest(deals.ps_deals ?? [], bestMap) : [];
+  const biggestDiscounts = deals ? filterBest(deals.biggest_discounts ?? [], bestMap) : [];
 
   const epicGames = egs ? [...(egs.current_free ?? []), ...(egs.upcoming_free ?? [])] : [];
 
-  const allDealTitles = [
-    ...bestDeals, ...biggestDiscounts, ...topRated, ...aaadeals, ...psDeals,
-  ].map((d) => d.title);
+  const allDealTitles = [...bestDeals, ...aaadeals, ...psDeals, ...biggestDiscounts].map((d) => d.title);
   const epicTitles = epicGames.map((g) => g.title);
 
   const dealImages = useImages(allDealTitles);
@@ -89,16 +105,9 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
 
   return (
     <>
-      {deals?.updated && (
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text-dim)", marginBottom: 32 }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
-          Updated {timeAgo(deals.updated)}
-        </div>
-      )}
-
       {epicGames.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/epic.png" alt="Epic Games" width={72} height={22} unoptimized style={{ objectFit: "contain" }} />}
+          logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}
           badge="Free This Week"
           badgeColor="dim"
         >
@@ -121,22 +130,6 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
         </DealSection>
       )}
 
-      {biggestDiscounts.length > 0 && (
-        <DealSection title="Biggest Discounts">
-          {biggestDiscounts.map((d) => (
-            <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
-          ))}
-        </DealSection>
-      )}
-
-      {topRated.length > 0 && (
-        <DealSection title="Top Rated on Sale" badge="★ 85%+" badgeColor="dim">
-          {topRated.map((d) => (
-            <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
-          ))}
-        </DealSection>
-      )}
-
       {aaadeals.length > 0 && (
         <DealSection title="AAA on Sale">
           {aaadeals.map((d) => (
@@ -147,10 +140,18 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
 
       {psDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={110} height={22} unoptimized style={{ objectFit: "contain" }} />}
+          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
           title="Deals"
         >
           {psDeals.map((d) => (
+            <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
+          ))}
+        </DealSection>
+      )}
+
+      {biggestDiscounts.length > 0 && (
+        <DealSection title="Biggest Discounts">
+          {biggestDiscounts.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
         </DealSection>
