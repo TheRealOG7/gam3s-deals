@@ -1,25 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
 :root {
-  --bg: oklch(13% 0.03 240);
-  --card: oklch(16% 0.04 240);
-  --border: oklch(22% 0.05 240);
-  --text: oklch(98% 0 0);
-  --text-secondary: oklch(65% 0.01 240);
-  --text-dim: oklch(50% 0.01 240);
-  --green: oklch(83% 0.22 158);
-  --orange: oklch(72% 0.19 55);
-  --radius: 10px;
+  color-scheme: dark;
+
+  --bg:        oklch(0.158 0.024 255);
+  --card:      oklch(0.21 0.034 264);
+  --surface-2: oklch(0.278 0.033 256);
+  --surface-3: oklch(0.446 0.03 256);
+
+  --text:           oklch(0.985 0.002 247);
+  --text-secondary: oklch(0.707 0.022 261);
+  --text-dim:       oklch(0.551 0.027 264);
+  --text-inverse:   oklch(0 0 0);
+
+  --border:   oklch(0.278 0.033 256);
+  --border-2: oklch(0.373 0.034 259);
+  --border-3: oklch(0.446 0.03 256);
+
+  --green:      oklch(0.847 0.238 150);
+  --green-tint: color-mix(in oklch, oklch(0.847 0.238 150) 15%, transparent);
+
+  --radius:    0.5rem;
+  --radius-xl: 0.75rem;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+html { color-scheme: dark; }
+
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
+
+::selection { background: var(--green); color: oklch(0 0 0); }
 
 a { text-decoration: none; color: inherit; }

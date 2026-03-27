@@ -23,10 +23,10 @@ export function DealCard({ deal, image, href }: DealCardProps) {
         flexShrink: 0,
         width: 160,
         aspectRatio: "3/4",
-        borderRadius: "var(--radius)",
+        borderRadius: "var(--radius-xl)",
         overflow: "hidden",
-        border: "1px solid var(--border)",
-        background: "linear-gradient(160deg, #1e2d45 0%, #0d1520 100%)",
+        border: "1px solid var(--border-2)",
+        background: "var(--card)",
         cursor: "pointer",
       }}
     >

@@ -32,14 +32,14 @@ function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; de
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "var(--card)", border: "1px solid var(--border)",
+          background: "var(--surface-2)", border: "1px solid var(--border-2)",
           borderRadius: 12, width: "100%", maxWidth: 680,
           maxHeight: "80vh", display: "flex", flexDirection: "column",
         }}
       >
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 18px", borderBottom: "1px solid var(--border)", flexShrink: 0,
+          padding: "14px 18px", borderBottom: "1px solid var(--border-2)", flexShrink: 0,
         }}>
           <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text)" }}>
             {title}
@@ -63,7 +63,7 @@ function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; de
               rel="noopener noreferrer"
               style={{
                 display: "flex", alignItems: "center", gap: 12,
-                padding: "11px 18px", borderBottom: "1px solid var(--border)",
+                padding: "11px 18px", borderBottom: "1px solid var(--border-2)",
                 cursor: "pointer", textDecoration: "none",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
@@ -169,7 +169,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
 
   return (
     <section style={{ marginBottom: 36 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid var(--border)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid var(--border-2)" }}>
         {logo}
         {title && (
           <h2 style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
