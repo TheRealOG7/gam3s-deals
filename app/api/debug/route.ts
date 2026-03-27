@@ -4,7 +4,7 @@ export async function GET() {
 
   if (!url) return Response.json({ error: "DASHBOARD_URL not set" });
 
-  const testUrl = `${url.replace(/\/$/, "")}/data/deals.json${key ? `?api_key=${key}` : ""}`;
+  const testUrl = `${url.replace(/\/$/, "")}/public/deals.json`;
 
   try {
     const res = await fetch(testUrl, { signal: AbortSignal.timeout(8000) });
