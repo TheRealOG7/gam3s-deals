@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import Image from "next/image";
 import { DealsClient } from "@/components/DealsClient";
 import { fetchDeals, fetchEgsGames, mergeDeals } from "@/lib/deals";
-import { lookupRawgImage } from "@/app/api/rawg/route";
+import { lookupRawgImage } from "@/lib/rawg";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "";
 const DASHBOARD_API_KEY = process.env.DASHBOARD_API_KEY ?? "";
