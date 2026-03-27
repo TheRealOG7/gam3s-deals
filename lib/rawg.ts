@@ -1,22 +1,29 @@
 const rawgCache = new Map<string, string | null>();
 
-const STOP = new Set(["the", "of", "and", "a", "an", "in", "on", "for", "to", "at"]);
+const STOP = new Set(["the", "of", "and", "a", "an", "in", "on", "for", "to", "at", "its", "by"]);
 
 function words(s: string): string[] {
   return s.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 1 && !STOP.has(w));
 }
 
-function similarity(query: string, resultName: string): number {
-  const qWords = words(query);
-  const rWords = new Set(words(resultName));
-  if (qWords.length === 0) return 0;
-  const matches = qWords.filter(w => rWords.has(w));
-  return matches.length / qWords.length;
+/**
+ * Check if the result is a plausible match for the query.
+ * Key insight: check what fraction of the *result's* words appear in the query.
+ * "For Honor" result vs "FOR HONOR Year 8" query → "honor" in query → 1/1 = 100% ✓
+ * "Gears of War" result vs "FOR HONOR Year 8" query → 0/2 = 0% ✗
+ */
+function isGoodMatch(query: string, resultName: string): boolean {
+  const qSet = new Set(words(query));
+  const rWords = words(resultName);
+  if (rWords.length === 0) return false;
+  const covered = rWords.filter(w => qSet.has(w)).length;
+  return covered / rWords.length >= 0.6;
 }
 
 function cleanTitle(title: string): string {
   return title
     .replace(/\s*[-–]\s*(deluxe|ultimate|standard|complete|gold|goty|game of the year|definitive|remastered|anniversary|enhanced|expanded|collector'?s?)\s*(edition|ed\.?)?\s*$/i, "")
+    .replace(/\s*(year\s*\d+)\s*(edition|ed\.?)?\s*$/i, "")
     .trim();
 }
 
@@ -27,16 +34,12 @@ async function fetchBestMatch(query: string, apiKey: string): Promise<string | n
   const data = await res.json();
   const results: Array<{ name: string; background_image: string | null }> = data?.results ?? [];
 
-  // Pick the result with highest name similarity to the query (threshold 0.5)
-  let best: { image: string; score: number } | null = null;
   for (const r of results) {
-    if (!r.background_image) continue;
-    const score = similarity(query, r.name);
-    if (score >= 0.5 && (!best || score > best.score)) {
-      best = { image: r.background_image, score };
+    if (r.background_image && isGoodMatch(query, r.name)) {
+      return r.background_image;
     }
   }
-  return best?.image ?? null;
+  return null;
 }
 
 export async function lookupRawgImage(title: string): Promise<string | null> {
@@ -50,13 +53,22 @@ export async function lookupRawgImage(title: string): Promise<string | null> {
   }
 
   try {
+    // Try full title first
     let image = await fetchBestMatch(title, apiKey);
 
-    // Retry with edition info stripped
+    // Retry with edition/year info stripped
     if (!image) {
       const cleaned = cleanTitle(title);
       if (cleaned !== title) {
         image = await fetchBestMatch(cleaned, apiKey);
+      }
+    }
+
+    // Last resort: just the first 2 significant words
+    if (!image) {
+      const shortTitle = words(title).slice(0, 2).join(" ");
+      if (shortTitle && shortTitle !== words(title).join(" ")) {
+        image = await fetchBestMatch(shortTitle, apiKey);
       }
     }
 
