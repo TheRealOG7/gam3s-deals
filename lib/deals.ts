@@ -51,30 +51,32 @@ function authHeaders(apiKey?: string): HeadersInit {
   return apiKey ? { "x-api-key": apiKey } : {};
 }
 
-export async function fetchDeals(dashboardUrl: string, apiKey?: string): Promise<DealsData | null> {
+// Server-side cache — survives across requests for 5 minutes
+const TTL = 5 * 60 * 1000;
+const cache = new Map<string, { data: unknown; ts: number }>();
+
+async function cachedFetch<T>(url: string, headers: HeadersInit): Promise<T | null> {
+  const cached = cache.get(url);
+  if (cached && Date.now() - cached.ts < TTL) return cached.data as T;
   try {
-    const res = await fetch(`${dashboardUrl}/data/deals.json`, {
-      headers: authHeaders(apiKey),
-      next: { revalidate: 300 },
-    });
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(8000) });
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    cache.set(url, { data, ts: Date.now() });
+    return data as T;
   } catch {
     return null;
   }
 }
 
+export async function fetchDeals(dashboardUrl: string, apiKey?: string): Promise<DealsData | null> {
+  if (!dashboardUrl) return null;
+  return cachedFetch<DealsData>(`${dashboardUrl}/data/deals.json`, authHeaders(apiKey));
+}
+
 export async function fetchEgsGames(dashboardUrl: string, apiKey?: string): Promise<EgsData | null> {
-  try {
-    const res = await fetch(`${dashboardUrl}/data/egs_free_games.json`, {
-      headers: authHeaders(apiKey),
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
+  if (!dashboardUrl) return null;
+  return cachedFetch<EgsData>(`${dashboardUrl}/data/egs_free_games.json`, authHeaders(apiKey));
 }
 
 export function mergeDeals(a: Deal[], b: Deal[]): Deal[] {
