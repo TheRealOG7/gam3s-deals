@@ -4,23 +4,25 @@ interface DealSectionProps {
   title?: string;
   logo?: ReactNode;
   badge?: string;
-  badgeColor?: "green" | "orange" | "dim";
-  minCardWidth?: number;
+  badgeColor?: "green" | "dim";
   children: ReactNode;
 }
 
 const badgeStyles: Record<string, React.CSSProperties> = {
   green: { background: "var(--green)", color: "#000" },
-  orange: { background: "var(--orange)", color: "#000" },
   dim: { background: "rgba(255,255,255,0.08)", color: "var(--text-secondary)" },
 };
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", minCardWidth = 130, children }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", children }: DealSectionProps) {
   return (
-    <section style={{ marginBottom: 32 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+    <section style={{ marginBottom: 40 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid var(--border)" }}>
         {logo}
-        {title && <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text)" }}>{title}</h2>}
+        {title && (
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text)", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            {title}
+          </h2>
+        )}
         {badge && (
           <span style={{
             fontSize: 9, fontWeight: 700, textTransform: "uppercase",
@@ -32,9 +34,11 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", minCardWid
         )}
       </div>
       <div style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(auto-fill, minmax(${minCardWidth}px, 1fr))`,
+        display: "flex",
         gap: 10,
+        overflowX: "auto",
+        paddingBottom: 8,
+        scrollbarWidth: "none",
       }}>
         {children}
       </div>

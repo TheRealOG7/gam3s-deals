@@ -22,6 +22,8 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
       rel="noopener noreferrer"
       style={{
         display: "block",
+        flexShrink: 0,
+        width: 240,
         background: "var(--card)",
         border: "1px solid var(--border)",
         borderRadius: "var(--radius)",
@@ -43,7 +45,7 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
         }} />
         <div style={{
           position: "absolute", top: 7, left: 7, zIndex: 2,
-          background: isCurrent ? "var(--orange)" : "rgba(255,255,255,0.12)",
+          background: isCurrent ? "var(--green)" : "rgba(255,255,255,0.12)",
           color: isCurrent ? "#000" : "var(--text-secondary)",
           fontSize: 9, fontWeight: 800, padding: "2px 7px",
           borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.05em",

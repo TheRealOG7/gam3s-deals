@@ -17,6 +17,8 @@ export function DealCard({ deal, image }: DealCardProps) {
       style={{
         display: "block",
         position: "relative",
+        flexShrink: 0,
+        width: 160,
         aspectRatio: "3/4",
         borderRadius: "var(--radius)",
         overflow: "hidden",

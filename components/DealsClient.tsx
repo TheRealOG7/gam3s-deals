@@ -5,8 +5,8 @@ import Image from "next/image";
 import { DealCard } from "@/components/DealCard";
 import { EpicFreeCard } from "@/components/EpicFreeCard";
 import { DealSection } from "@/components/DealSection";
-import { mergeDeals, timeAgo } from "@/lib/deals";
-import type { Deal, DealsData, EgsData, EpicGame } from "@/lib/deals";
+import { timeAgo } from "@/lib/deals";
+import type { Deal, DealsData, EgsData } from "@/lib/deals";
 
 async function getImage(title: string): Promise<string | null> {
   try {
@@ -33,23 +33,47 @@ function useImages(titles: string[]): Record<string, string | null> {
   return images;
 }
 
+function dedupeDeals(deals: Deal[]): Deal[] {
+  const seen = new Set<string>();
+  return deals.filter((d) => {
+    const key = d.title.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 interface DealsClientProps {
   deals: DealsData | null;
   egs: EgsData | null;
 }
 
 export function DealsClient({ deals, egs }: DealsClientProps) {
-  const bestDeals = deals ? mergeDeals(deals.best_deals, deals.gog_deals) : [];
+  // Collect all seen titles globally to avoid cross-section duplication
+  const seenTitles = new Set<string>();
+
+  function filterSeen(list: Deal[]): Deal[] {
+    return (list ?? []).filter((d) => {
+      const key = d.title.toLowerCase();
+      if (seenTitles.has(key)) return false;
+      seenTitles.add(key);
+      return true;
+    });
+  }
+
+  const bestDeals = deals
+    ? filterSeen(dedupeDeals([...(deals.best_deals ?? []), ...(deals.gog_deals ?? [])]))
+    : [];
+  const biggestDiscounts = deals ? filterSeen(deals.biggest_discounts ?? []) : [];
+  const topRated = deals ? filterSeen(deals.top_rated ?? []) : [];
+  const aaadeals = deals ? filterSeen(deals.aaa_deals ?? []) : [];
+  const psDeals = deals ? filterSeen(deals.ps_deals ?? []) : [];
+
   const epicGames = egs ? [...(egs.current_free ?? []), ...(egs.upcoming_free ?? [])] : [];
 
   const allDealTitles = [
-    ...bestDeals,
-    ...(deals?.biggest_discounts ?? []),
-    ...(deals?.top_rated ?? []),
-    ...(deals?.aaa_deals ?? []),
-    ...(deals?.ps_deals ?? []),
+    ...bestDeals, ...biggestDiscounts, ...topRated, ...aaadeals, ...psDeals,
   ].map((d) => d.title);
-
   const epicTitles = epicGames.map((g) => g.title);
 
   const dealImages = useImages(allDealTitles);
@@ -66,7 +90,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
   return (
     <>
       {deals?.updated && (
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text-dim)", marginBottom: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--text-dim)", marginBottom: 32 }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--green)", display: "inline-block" }} />
           Updated {timeAgo(deals.updated)}
         </div>
@@ -74,10 +98,9 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
 
       {epicGames.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/epic.svg" alt="Epic Games" width={60} height={18} unoptimized />}
+          logo={<Image src="/logos/epic.png" alt="Epic Games" width={72} height={22} unoptimized style={{ objectFit: "contain" }} />}
           badge="Free This Week"
-          badgeColor="orange"
-          minCardWidth={240}
+          badgeColor="dim"
         >
           {epicGames.map((g) => (
             <EpicFreeCard
@@ -98,36 +121,36 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
         </DealSection>
       )}
 
-      {(deals?.biggest_discounts?.length ?? 0) > 0 && (
+      {biggestDiscounts.length > 0 && (
         <DealSection title="Biggest Discounts">
-          {deals!.biggest_discounts.map((d) => (
+          {biggestDiscounts.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
         </DealSection>
       )}
 
-      {(deals?.top_rated?.length ?? 0) > 0 && (
+      {topRated.length > 0 && (
         <DealSection title="Top Rated on Sale" badge="★ 85%+" badgeColor="dim">
-          {deals!.top_rated.map((d) => (
+          {topRated.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
         </DealSection>
       )}
 
-      {(deals?.aaa_deals?.length ?? 0) > 0 && (
+      {aaadeals.length > 0 && (
         <DealSection title="AAA on Sale">
-          {deals!.aaa_deals.map((d) => (
+          {aaadeals.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
         </DealSection>
       )}
 
-      {(deals?.ps_deals?.length ?? 0) > 0 && (
+      {psDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/playstation.svg" alt="PlayStation" width={100} height={18} unoptimized />}
+          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={110} height={22} unoptimized style={{ objectFit: "contain" }} />}
           title="Deals"
         >
-          {deals!.ps_deals.map((d) => (
+          {psDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
         </DealSection>
