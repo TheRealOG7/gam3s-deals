@@ -77,7 +77,9 @@ function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; de
                 </div>
                 {deal.steam_rating_text && (
                   <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                    {deal.steam_rating_text}
+                    {deal.steam_count
+                      ? `${deal.steam_rating_text} (${deal.steam_count.toLocaleString()})`
+                      : deal.steam_rating_text}
                   </div>
                 )}
               </div>
