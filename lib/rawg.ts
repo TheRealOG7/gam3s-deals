@@ -1,18 +1,42 @@
 const rawgCache = new Map<string, string | null>();
 
+const STOP = new Set(["the", "of", "and", "a", "an", "in", "on", "for", "to", "at"]);
+
+function words(s: string): string[] {
+  return s.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter(w => w.length > 1 && !STOP.has(w));
+}
+
+function similarity(query: string, resultName: string): number {
+  const qWords = words(query);
+  const rWords = new Set(words(resultName));
+  if (qWords.length === 0) return 0;
+  const matches = qWords.filter(w => rWords.has(w));
+  return matches.length / qWords.length;
+}
+
 function cleanTitle(title: string): string {
   return title
     .replace(/\s*[-–]\s*(deluxe|ultimate|standard|complete|gold|goty|game of the year|definitive|remastered|anniversary|enhanced|expanded|collector'?s?)\s*(edition|ed\.?)?\s*$/i, "")
-    .replace(/\s*:\s*(deluxe|ultimate|complete|gold|goty|remastered)\s*edition\s*$/i, "")
     .trim();
 }
 
-async function fetchRawgImage(query: string, apiKey: string): Promise<string | null> {
-  const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page_size=3&search_exact=false`;
+async function fetchBestMatch(query: string, apiKey: string): Promise<string | null> {
+  const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(query)}&page_size=5`;
   const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
   if (!res.ok) return null;
   const data = await res.json();
-  return data?.results?.[0]?.background_image ?? null;
+  const results: Array<{ name: string; background_image: string | null }> = data?.results ?? [];
+
+  // Pick the result with highest name similarity to the query (threshold 0.5)
+  let best: { image: string; score: number } | null = null;
+  for (const r of results) {
+    if (!r.background_image) continue;
+    const score = similarity(query, r.name);
+    if (score >= 0.5 && (!best || score > best.score)) {
+      best = { image: r.background_image, score };
+    }
+  }
+  return best?.image ?? null;
 }
 
 export async function lookupRawgImage(title: string): Promise<string | null> {
@@ -26,13 +50,13 @@ export async function lookupRawgImage(title: string): Promise<string | null> {
   }
 
   try {
-    let image = await fetchRawgImage(title, apiKey);
+    let image = await fetchBestMatch(title, apiKey);
 
-    // Retry with cleaned title if no result
+    // Retry with edition info stripped
     if (!image) {
       const cleaned = cleanTitle(title);
       if (cleaned !== title) {
-        image = await fetchRawgImage(cleaned, apiKey);
+        image = await fetchBestMatch(cleaned, apiKey);
       }
     }
 

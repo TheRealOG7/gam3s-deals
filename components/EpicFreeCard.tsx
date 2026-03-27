@@ -57,7 +57,7 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
         <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)" }}>{game.title}</div>
         <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 2 }}>
           {isCurrent
-            ? `Until ${fmtDate(game.end_date)}${game.original_price && game.original_price !== "0" ? ` · was $${game.original_price}` : ""}`
+            ? `Until ${fmtDate(game.end_date)}${game.original_price && game.original_price !== "0" ? ` · was ${game.original_price}` : ""}`
             : `Starts ${fmtDate(game.start_date)}`}
         </div>
       </div>

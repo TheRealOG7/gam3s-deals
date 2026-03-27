@@ -57,7 +57,7 @@ function DealsModal({ title, deals, onClose }: { title: string; deals: Deal[]; o
           {deals.map((deal, i) => (
             <a
               key={deal.title}
-              href={deal.deal_url}
+              href={deal.steam_url || deal.deal_url}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -73,9 +73,9 @@ function DealsModal({ title, deals, onClose }: { title: string; deals: Deal[]; o
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 2 }}>
                   {deal.title}
                 </div>
-                {(deal.steam_score || deal.metacritic) && (
+                {deal.steam_rating_text && (
                   <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                    {deal.steam_score ? `★ ${deal.steam_score}%` : `MC: ${deal.metacritic}`}
+                    {deal.steam_rating_text}
                   </div>
                 )}
               </div>

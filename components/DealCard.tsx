@@ -9,9 +9,12 @@ interface DealCardProps {
 }
 
 export function DealCard({ deal, image }: DealCardProps) {
+  const href = deal.steam_url || deal.deal_url;
+  const reviewText = deal.steam_rating_text;
+
   return (
     <a
-      href={deal.deal_url}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       style={{
@@ -70,11 +73,11 @@ export function DealCard({ deal, image }: DealCardProps) {
             ${deal.normal_price}
           </span>
         </div>
-        {(deal.steam_score || deal.metacritic) ? (
-          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3 }}>
-            {deal.steam_score ? `★ ${deal.steam_score}%` : `MC ${deal.metacritic}`}
+        {reviewText && (
+          <div style={{ fontSize: 9, color: "var(--text-secondary)", marginTop: 3, opacity: 0.8 }}>
+            {reviewText}
           </div>
-        ) : null}
+        )}
       </div>
     </a>
   );

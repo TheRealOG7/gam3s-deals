@@ -4,8 +4,12 @@ export interface Deal {
   normal_price: string;
   savings_pct: number;
   deal_url: string;
-  expiry: string | null;
+  steam_url?: string;
+  store_name?: string;
+  expiry?: string | null;
   steam_score?: number;
+  steam_rating?: number;
+  steam_rating_text?: string;
   steam_count?: number;
   metacritic?: number;
 }
