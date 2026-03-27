@@ -69,21 +69,16 @@ async function cachedFetch<T>(url: string, headers: HeadersInit): Promise<T | nu
   }
 }
 
-function buildUrl(dashboardUrl: string, path: string, apiKey?: string): string {
-  const base = dashboardUrl.replace(/\/$/, "");
-  const url = new URL(`${base}${path}`);
-  if (apiKey) url.searchParams.set("api_key", apiKey);
-  return url.toString();
-}
-
 export async function fetchDeals(dashboardUrl: string, apiKey?: string): Promise<DealsData | null> {
   if (!dashboardUrl) return null;
-  return cachedFetch<DealsData>(buildUrl(dashboardUrl, "/data/deals.json", apiKey), {});
+  const base = dashboardUrl.replace(/\/$/, "");
+  return cachedFetch<DealsData>(`${base}/public/deals.json`, {});
 }
 
 export async function fetchEgsGames(dashboardUrl: string, apiKey?: string): Promise<EgsData | null> {
   if (!dashboardUrl) return null;
-  return cachedFetch<EgsData>(buildUrl(dashboardUrl, "/data/egs_free_games.json", apiKey), {});
+  const base = dashboardUrl.replace(/\/$/, "");
+  return cachedFetch<EgsData>(`${base}/public/egs_free_games.json`, {});
 }
 
 export function mergeDeals(a: Deal[], b: Deal[]): Deal[] {
