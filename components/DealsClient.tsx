@@ -85,6 +85,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
           logo={<Image src="/logos/epic.svg" alt="Epic Games" width={60} height={18} unoptimized />}
           badge="Free This Week"
           badgeColor="orange"
+          minCardWidth={240}
         >
           {epicGames.map((g) => (
             <EpicFreeCard

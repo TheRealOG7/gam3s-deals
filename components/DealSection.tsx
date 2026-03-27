@@ -5,6 +5,7 @@ interface DealSectionProps {
   logo?: ReactNode;
   badge?: string;
   badgeColor?: "green" | "orange" | "dim";
+  minCardWidth?: number;
   children: ReactNode;
 }
 
@@ -14,7 +15,7 @@ const badgeStyles: Record<string, React.CSSProperties> = {
   dim: { background: "rgba(255,255,255,0.08)", color: "var(--text-secondary)" },
 };
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", children }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", minCardWidth = 130, children }: DealSectionProps) {
   return (
     <section style={{ marginBottom: 32 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
@@ -32,7 +33,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", children }
       </div>
       <div style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+        gridTemplateColumns: `repeat(auto-fill, minmax(${minCardWidth}px, 1fr))`,
         gap: 10,
       }}>
         {children}
