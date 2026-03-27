@@ -7,13 +7,14 @@ interface DealCardProps {
   deal: Deal;
   image: string | null;
   href: string;
+  review?: { text: string; count: number } | null;
 }
 
-export function DealCard({ deal, image, href }: DealCardProps) {
-  const reviewText = deal.steam_rating_text
-    ? deal.steam_count
-      ? `${deal.steam_rating_text} (${deal.steam_count.toLocaleString()})`
-      : deal.steam_rating_text
+export function DealCard({ deal, image, href, review }: DealCardProps) {
+  const reviewText = review
+    ? review.count > 0
+      ? `${review.text} (${review.count.toLocaleString()})`
+      : review.text
     : null;
 
   return (

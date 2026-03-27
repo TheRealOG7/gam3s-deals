@@ -44,11 +44,12 @@ interface DealsClientProps {
   egs: EgsData | null;
   images: Record<string, string | null>;
   urls: Record<string, string>;
+  reviews: Record<string, { text: string; count: number } | null>;
   totalSavings: number;
   dealCount: number;
 }
 
-export function DealsClient({ deals, egs, images, urls, totalSavings, dealCount }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -102,17 +103,17 @@ export function DealsClient({ deals, egs, images, urls, totalSavings, dealCount 
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls} headerExtra={epicGames.length === 0 ? savingsBadge : undefined}>
+        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls} resolvedReviews={reviews} headerExtra={epicGames.length === 0 ? savingsBadge : undefined}>
           {bestDeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
       )}
 
       {aaadeals.length > 0 && (
-        <DealSection title="AAA on Sale" allDeals={deals?.aaa_deals ?? []} resolvedUrls={urls}>
+        <DealSection title="AAA on Sale" allDeals={deals?.aaa_deals ?? []} resolvedUrls={urls} resolvedReviews={reviews}>
           {aaadeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
       )}
@@ -123,17 +124,18 @@ export function DealsClient({ deals, egs, images, urls, totalSavings, dealCount 
           title="Deals"
           allDeals={deals?.ps_deals ?? []}
           resolvedUrls={urls}
+          resolvedReviews={reviews}
         >
           {psDeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
       )}
 
       {biggestDiscounts.length > 0 && (
-        <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []} resolvedUrls={urls}>
+        <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []} resolvedUrls={urls} resolvedReviews={reviews}>
           {biggestDiscounts.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
       )}

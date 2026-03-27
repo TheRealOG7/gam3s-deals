@@ -52,6 +52,44 @@ async function batch<T>(fns: Array<() => Promise<T>>, concurrency = 5): Promise<
   return results;
 }
 
+// ── Steam review lookup (direct from Steam API — covers edition variants CheapShark misses) ──
+const steamReviewCache = new Map<string, { text: string; count: number } | null>();
+
+async function fetchSteamReview(steamUrl: string): Promise<{ text: string; count: number } | null> {
+  const m = steamUrl.match(/\/app\/(\d+)/);
+  if (!m) return null;
+  const appId = m[1];
+  if (steamReviewCache.has(appId)) return steamReviewCache.get(appId)!;
+  try {
+    const res = await fetch(
+      `https://store.steampowered.com/appreviews/${appId}?json=1&language=all&purchase_type=all&num_per_page=0`,
+      { signal: AbortSignal.timeout(5000) }
+    );
+    if (!res.ok) { steamReviewCache.set(appId, null); return null; }
+    const data = await res.json();
+    const s = data?.query_summary;
+    if (!s?.review_score_desc || s.review_score_desc === "No user reviews") {
+      steamReviewCache.set(appId, null); return null;
+    }
+    const result = { text: s.review_score_desc as string, count: (s.total_reviews as number) ?? 0 };
+    steamReviewCache.set(appId, result);
+    return result;
+  } catch {
+    steamReviewCache.set(appId, null);
+    return null;
+  }
+}
+
+async function resolveReviews(deals: Deal[]): Promise<Record<string, { text: string; count: number } | null>> {
+  const steamDeals = deals.filter((d) => d.steam_url);
+  const keys = steamDeals.map((d) => d.title);
+  const fns = steamDeals.map((d) => () => fetchSteamReview(d.steam_url!));
+  const results = await batch(fns, 8);
+  const reviews: Record<string, { text: string; count: number } | null> = {};
+  keys.forEach((k, i) => { reviews[k] = results[i]; });
+  return reviews;
+}
+
 // ── Steam portrait validator (not all games have library_600x900.jpg) ─────────
 const steamPortraitCache = new Map<string, boolean>();
 
@@ -148,9 +186,10 @@ export default async function DealsPage() {
 
   const uniqueDeals = [...new Map(allDeals.map((d) => [d.title, d])).values()];
 
-  const [images, urls] = await Promise.all([
+  const [images, urls, reviews] = await Promise.all([
     resolveImages(uniqueDeals, epicGames),
     resolveUrls(uniqueDeals),
+    resolveReviews(uniqueDeals),
   ]);
 
   // Total potential savings across all unique deals shown
@@ -160,8 +199,8 @@ export default async function DealsPage() {
   }, 0);
 
   return (
-    <main style={{ maxWidth: 1400, margin: "0 auto", padding: "12px 16px 40px" }}>
-      <DealsClient deals={deals} egs={egs} images={images} urls={urls} totalSavings={totalSavings} dealCount={uniqueDeals.length} />
+    <main style={{ padding: "12px 16px 40px" }}>
+      <DealsClient deals={deals} egs={egs} images={images} urls={urls} reviews={reviews} totalSavings={totalSavings} dealCount={uniqueDeals.length} />
     </main>
   );
 }

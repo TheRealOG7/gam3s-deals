@@ -10,6 +10,7 @@ interface DealSectionProps {
   badgeColor?: "green" | "dim";
   allDeals?: Deal[];
   resolvedUrls?: Record<string, string>;
+  resolvedReviews?: Record<string, { text: string; count: number } | null>;
   headerExtra?: ReactNode;
   children: ReactNode;
 }
@@ -19,7 +20,7 @@ const badgeStyles: Record<string, React.CSSProperties> = {
   dim: { background: "rgba(255,255,255,0.08)", color: "var(--text-secondary)" },
 };
 
-function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; deals: Deal[]; resolvedUrls?: Record<string, string>; onClose: () => void }) {
+function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { title: string; deals: Deal[]; resolvedUrls?: Record<string, string>; resolvedReviews?: Record<string, { text: string; count: number } | null>; onClose: () => void }) {
   return (
     <div
       onClick={onClose}
@@ -75,13 +76,15 @@ function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; de
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 2 }}>
                   {deal.title}
                 </div>
-                {deal.steam_rating_text && (
+                {resolvedReviews?.[deal.title] ? (
                   <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                    {deal.steam_count
-                      ? `${deal.steam_rating_text} (${deal.steam_count.toLocaleString()})`
-                      : deal.steam_rating_text}
+                    {resolvedReviews[deal.title]!.count > 0
+                      ? `${resolvedReviews[deal.title]!.text} (${resolvedReviews[deal.title]!.count.toLocaleString()})`
+                      : resolvedReviews[deal.title]!.text}
                   </div>
-                )}
+                ) : deal.steam_rating_text ? (
+                  <div style={{ fontSize: 11, color: "var(--text-dim)" }}>{deal.steam_rating_text}</div>
+                ) : null}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
                 <span style={{ fontSize: 11, color: "var(--text-dim)", textDecoration: "line-through" }}>
@@ -105,7 +108,7 @@ function DealsModal({ title, deals, resolvedUrls, onClose }: { title: string; de
   );
 }
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, headerExtra, children }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, resolvedReviews, headerExtra, children }: DealSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -228,7 +231,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
       </div>
 
       {modalOpen && allDeals && (
-        <DealsModal title={sectionLabel} deals={allDeals} resolvedUrls={resolvedUrls} onClose={() => setModalOpen(false)} />
+        <DealsModal title={sectionLabel} deals={allDeals} resolvedUrls={resolvedUrls} resolvedReviews={resolvedReviews} onClose={() => setModalOpen(false)} />
       )}
     </section>
   );
