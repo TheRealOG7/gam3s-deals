@@ -6,10 +6,10 @@ import type { Deal } from "@/lib/deals";
 interface DealCardProps {
   deal: Deal;
   image: string | null;
+  href: string;
 }
 
-export function DealCard({ deal, image }: DealCardProps) {
-  const href = deal.steam_url || deal.deal_url;
+export function DealCard({ deal, image, href }: DealCardProps) {
   const reviewText = deal.steam_rating_text;
 
   return (

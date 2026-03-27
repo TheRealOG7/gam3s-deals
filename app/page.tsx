@@ -7,35 +7,83 @@ import type { Deal, EpicGame } from "@/lib/deals";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "";
 
-/** Extract Steam portrait image URL directly from steam_url — no API call needed */
+// ── Redirect resolver ─────────────────────────────────────────────────────────
+const redirectCache = new Map<string, string>();
+
+async function resolveUrl(url: string): Promise<string> {
+  if (!url || !url.includes("cheapshark.com/redirect")) return url;
+  if (redirectCache.has(url)) return redirectCache.get(url)!;
+  try {
+    const res = await fetch(url, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(6000),
+    });
+    const final = res.url && res.url !== url ? res.url : url;
+    redirectCache.set(url, final);
+    return final;
+  } catch {
+    return url;
+  }
+}
+
+// ── Steam CDN image ───────────────────────────────────────────────────────────
 function steamPortrait(steamUrl?: string): string | null {
   const m = steamUrl?.match(/\/app\/(\d+)/);
   return m ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${m[1]}/library_600x900.jpg` : null;
 }
 
+// ── Concurrent batch runner ───────────────────────────────────────────────────
+async function batch<T>(fns: Array<() => Promise<T>>, concurrency = 5): Promise<T[]> {
+  const results: T[] = new Array(fns.length);
+  let i = 0;
+  async function worker() {
+    while (i < fns.length) {
+      const idx = i++;
+      results[idx] = await fns[idx]();
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return results;
+}
+
+// ── Image + URL resolution ────────────────────────────────────────────────────
 async function resolveImages(
   deals: Deal[],
   epicGames: EpicGame[],
 ): Promise<Record<string, string | null>> {
-  const tasks: Array<{ key: string; p: Promise<string | null> }> = [];
+  const keys: string[] = [];
+  const fns: Array<() => Promise<string | null>> = [];
 
   for (const deal of deals) {
+    keys.push(deal.title);
     const steam = steamPortrait(deal.steam_url);
-    tasks.push({
-      key: deal.title,
-      p: steam ? Promise.resolve(steam) : lookupRawgImage(deal.title),
-    });
+    fns.push(steam ? () => Promise.resolve(steam) : () => lookupRawgImage(deal.title));
   }
   for (const g of epicGames) {
-    tasks.push({ key: g.title, p: lookupRawgImage(g.title) });
+    keys.push(g.title);
+    fns.push(() => lookupRawgImage(g.title));
   }
 
-  const results = await Promise.all(tasks.map((t) => t.p));
+  const results = await batch(fns, 6);
   const images: Record<string, string | null> = {};
-  tasks.forEach((t, i) => { images[t.key] = results[i]; });
+  keys.forEach((k, i) => { images[k] = results[i]; });
   return images;
 }
 
+async function resolveUrls(deals: Deal[]): Promise<Record<string, string>> {
+  const keys = deals.map((d) => d.title);
+  const fns = deals.map((deal) => () => {
+    if (deal.steam_url) return Promise.resolve(deal.steam_url);
+    return resolveUrl(deal.deal_url);
+  });
+  const results = await batch(fns, 8);
+  const urls: Record<string, string> = {};
+  keys.forEach((k, i) => { urls[k] = results[i]; });
+  return urls;
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DealsPage() {
   const [deals, egs] = await Promise.all([
     fetchDeals(DASHBOARD_URL),
@@ -55,14 +103,16 @@ export default async function DealsPage() {
     ...(egs?.upcoming_free ?? []),
   ];
 
-  // Deduplicate by title before fetching
   const uniqueDeals = [...new Map(allDeals.map((d) => [d.title, d])).values()];
 
-  const images = await resolveImages(uniqueDeals, epicGames);
+  const [images, urls] = await Promise.all([
+    resolveImages(uniqueDeals, epicGames),
+    resolveUrls(uniqueDeals),
+  ]);
 
   return (
     <main style={{ maxWidth: 1400, margin: "0 auto", padding: "12px 16px 40px" }}>
-      <DealsClient deals={deals} egs={egs} images={images} />
+      <DealsClient deals={deals} egs={egs} images={images} urls={urls} />
     </main>
   );
 }

@@ -43,9 +43,10 @@ interface DealsClientProps {
   deals: DealsData | null;
   egs: EgsData | null;
   images: Record<string, string | null>;
+  urls: Record<string, string>;
 }
 
-export function DealsClient({ deals, egs, images }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -88,17 +89,17 @@ export function DealsClient({ deals, egs, images }: DealsClientProps) {
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]}>
+        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls}>
           {bestDeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
           ))}
         </DealSection>
       )}
 
       {aaadeals.length > 0 && (
-        <DealSection title="AAA on Sale" allDeals={deals?.aaa_deals ?? []}>
+        <DealSection title="AAA on Sale" allDeals={deals?.aaa_deals ?? []} resolvedUrls={urls}>
           {aaadeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
           ))}
         </DealSection>
       )}
@@ -108,17 +109,18 @@ export function DealsClient({ deals, egs, images }: DealsClientProps) {
           logo={<Image src="/logos/playstation.png" alt="PlayStation" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
           title="Deals"
           allDeals={deals?.ps_deals ?? []}
+          resolvedUrls={urls}
         >
           {psDeals.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
           ))}
         </DealSection>
       )}
 
       {biggestDiscounts.length > 0 && (
-        <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []}>
+        <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []} resolvedUrls={urls}>
           {biggestDiscounts.map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} />
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} />
           ))}
         </DealSection>
       )}

@@ -15,27 +15,27 @@ const deal: Deal = {
 
 describe("DealCard", () => {
   it("renders game title", () => {
-    render(<DealCard deal={deal} image={null} />);
+    render(<DealCard deal={deal} image={null} href={deal.deal_url} />);
     expect(screen.getByText("Elden Ring")).toBeInTheDocument();
   });
   it("renders sale price", () => {
-    render(<DealCard deal={deal} image={null} />);
+    render(<DealCard deal={deal} image={null} href={deal.deal_url} />);
     expect(screen.getByText("$13.00")).toBeInTheDocument();
   });
   it("renders discount badge", () => {
-    render(<DealCard deal={deal} image={null} />);
+    render(<DealCard deal={deal} image={null} href={deal.deal_url} />);
     expect(screen.getByText("−78%")).toBeInTheDocument();
   });
   it("renders steam score when available", () => {
-    render(<DealCard deal={deal} image={null} />);
+    render(<DealCard deal={deal} image={null} href={deal.deal_url} />);
     expect(screen.getByText("★ 96%")).toBeInTheDocument();
   });
   it("omits steam score when not provided", () => {
-    render(<DealCard deal={{ ...deal, steam_score: undefined }} image={null} />);
+    render(<DealCard deal={{ ...deal, steam_score: undefined }} image={null} href={deal.deal_url} />);
     expect(screen.queryByText(/★/)).not.toBeInTheDocument();
   });
   it("links to deal URL with target blank", () => {
-    render(<DealCard deal={deal} image={null} />);
+    render(<DealCard deal={deal} image={null} href={deal.deal_url} />);
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "https://gog.com/elden-ring");
     expect(link).toHaveAttribute("target", "_blank");
