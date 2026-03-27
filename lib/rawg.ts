@@ -1,4 +1,4 @@
-const rawgCache = new Map<string, string | null>();
+export const rawgCache = new Map<string, string | null>();
 
 const STOP = new Set(["the", "of", "and", "a", "an", "in", "on", "for", "to", "at", "its", "by"]);
 

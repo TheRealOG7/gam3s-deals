@@ -44,9 +44,10 @@ interface DealsClientProps {
   egs: EgsData | null;
   images: Record<string, string | null>;
   urls: Record<string, string>;
+  totalSavings: number;
 }
 
-export function DealsClient({ deals, egs, images, urls }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, totalSavings }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -69,8 +70,24 @@ export function DealsClient({ deals, egs, images, urls }: DealsClientProps) {
     );
   }
 
+  const savingsLabel = totalSavings >= 1
+    ? `Save up to $${Math.round(totalSavings).toLocaleString()}`
+    : null;
+
   return (
     <>
+      {savingsLabel && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 800, textTransform: "uppercase",
+            letterSpacing: "0.06em", padding: "3px 10px", borderRadius: 5,
+            background: "var(--green)", color: "#000",
+          }}>
+            {savingsLabel}
+          </span>
+        </div>
+      )}
+
       {epicGames.length > 0 && (
         <DealSection
           logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}

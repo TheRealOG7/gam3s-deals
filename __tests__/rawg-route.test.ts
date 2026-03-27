@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { lookupRawgImage, rawgCache } from "@/app/api/rawg/route";
+import { lookupRawgImage, rawgCache } from "@/lib/rawg";
 
 describe("lookupRawgImage", () => {
   beforeEach(() => { rawgCache.clear(); vi.resetAllMocks(); });

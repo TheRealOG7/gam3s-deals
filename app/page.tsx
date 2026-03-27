@@ -14,10 +14,10 @@ async function resolveUrl(url: string): Promise<string> {
   if (!url || !url.includes("cheapshark.com/redirect")) return url;
   if (redirectCache.has(url)) return redirectCache.get(url)!;
   try {
+    // CheapShark doesn't follow HEAD redirects — use GET and discard body
     const res = await fetch(url, {
-      method: "HEAD",
       redirect: "follow",
-      signal: AbortSignal.timeout(6000),
+      signal: AbortSignal.timeout(8000),
     });
     const final = res.url && res.url !== url ? res.url : url;
     redirectCache.set(url, final);
@@ -47,6 +47,22 @@ async function batch<T>(fns: Array<() => Promise<T>>, concurrency = 5): Promise<
   return results;
 }
 
+// ── Steam portrait validator (not all games have library_600x900.jpg) ─────────
+const steamPortraitCache = new Map<string, boolean>();
+
+async function steamPortraitExists(url: string): Promise<boolean> {
+  if (steamPortraitCache.has(url)) return steamPortraitCache.get(url)!;
+  try {
+    const res = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(4000) });
+    const ok = res.ok;
+    steamPortraitCache.set(url, ok);
+    return ok;
+  } catch {
+    steamPortraitCache.set(url, false);
+    return false;
+  }
+}
+
 // ── Image + URL resolution ────────────────────────────────────────────────────
 async function resolveImages(
   deals: Deal[],
@@ -57,8 +73,15 @@ async function resolveImages(
 
   for (const deal of deals) {
     keys.push(deal.title);
-    const steam = steamPortrait(deal.steam_url);
-    fns.push(steam ? () => Promise.resolve(steam) : () => lookupRawgImage(deal.title));
+    const steamUrl = steamPortrait(deal.steam_url);
+    if (steamUrl) {
+      fns.push(async () => {
+        const ok = await steamPortraitExists(steamUrl);
+        return ok ? steamUrl : lookupRawgImage(deal.title);
+      });
+    } else {
+      fns.push(() => lookupRawgImage(deal.title));
+    }
   }
   for (const g of epicGames) {
     keys.push(g.title);
@@ -110,9 +133,15 @@ export default async function DealsPage() {
     resolveUrls(uniqueDeals),
   ]);
 
+  // Total potential savings across all unique deals shown
+  const totalSavings = uniqueDeals.reduce((sum, d) => {
+    const saved = parseFloat(d.normal_price) - parseFloat(d.sale_price);
+    return sum + (isNaN(saved) || saved < 0 ? 0 : saved);
+  }, 0);
+
   return (
     <main style={{ maxWidth: 1400, margin: "0 auto", padding: "12px 16px 40px" }}>
-      <DealsClient deals={deals} egs={egs} images={images} urls={urls} />
+      <DealsClient deals={deals} egs={egs} images={images} urls={urls} totalSavings={totalSavings} />
     </main>
   );
 }
