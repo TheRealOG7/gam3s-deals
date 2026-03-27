@@ -14,7 +14,7 @@ export async function lookupRawgImage(title: string): Promise<string | null> {
 
   try {
     const url = `https://api.rawg.io/api/games?key=${apiKey}&search=${encodeURIComponent(title)}&page_size=1`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
     if (!res.ok) {
       rawgCache.set(key, null);
       return null;
