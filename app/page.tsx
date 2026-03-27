@@ -161,7 +161,7 @@ export default async function DealsPage() {
 
   return (
     <main style={{ maxWidth: 1400, margin: "0 auto", padding: "12px 16px 40px" }}>
-      <DealsClient deals={deals} egs={egs} images={images} urls={urls} totalSavings={totalSavings} />
+      <DealsClient deals={deals} egs={egs} images={images} urls={urls} totalSavings={totalSavings} dealCount={uniqueDeals.length} />
     </main>
   );
 }

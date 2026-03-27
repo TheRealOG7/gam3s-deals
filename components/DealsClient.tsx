@@ -45,9 +45,10 @@ interface DealsClientProps {
   images: Record<string, string | null>;
   urls: Record<string, string>;
   totalSavings: number;
+  dealCount: number;
 }
 
-export function DealsClient({ deals, egs, images, urls, totalSavings }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, totalSavings, dealCount }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -71,7 +72,7 @@ export function DealsClient({ deals, egs, images, urls, totalSavings }: DealsCli
   }
 
   const savingsLabel = totalSavings >= 1
-    ? `Save up to $${Math.round(totalSavings).toLocaleString()}`
+    ? `Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`
     : null;
 
   return (
