@@ -57,7 +57,8 @@ export function DealCard({ deal, image }: DealCardProps) {
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 9px", zIndex: 2 }}>
         <div style={{
           fontSize: 11, fontWeight: 600, color: "var(--text)",
-          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginBottom: 3,
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          overflow: "hidden", marginBottom: 3, lineHeight: 1.35,
         }}>
           {deal.title}
         </div>

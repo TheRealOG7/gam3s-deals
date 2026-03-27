@@ -39,7 +39,6 @@ function normalizeTitle(title: string): string {
     .trim();
 }
 
-/** From all deals across all sections, keep only the best deal (highest savings_pct) per normalized title */
 function buildBestDeals(sections: Deal[][]): Map<string, Deal> {
   const best = new Map<string, Deal>();
   for (const section of sections) {
@@ -54,16 +53,13 @@ function buildBestDeals(sections: Deal[][]): Map<string, Deal> {
   return best;
 }
 
-/** Filter a section to only include deals that ARE the best deal for their title */
 function filterBest(section: Deal[], bestMap: Map<string, Deal>): Deal[] {
   const seen = new Set<string>();
   return (section ?? []).filter((deal) => {
     const key = normalizeTitle(deal.title);
     if (seen.has(key)) return false;
     const best = bestMap.get(key);
-    if (!best) return false;
-    // Only include if this deal's title matches the chosen best deal
-    if (best.title !== deal.title) return false;
+    if (!best || best.title !== deal.title) return false;
     seen.add(key);
     return true;
   });
@@ -123,7 +119,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals">
+        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]}>
           {bestDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
@@ -131,7 +127,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       )}
 
       {aaadeals.length > 0 && (
-        <DealSection title="AAA on Sale">
+        <DealSection title="AAA on Sale" allDeals={deals?.aaa_deals ?? []}>
           {aaadeals.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
@@ -142,6 +138,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
         <DealSection
           logo={<Image src="/logos/playstation.png" alt="PlayStation" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
           title="Deals"
+          allDeals={deals?.ps_deals ?? []}
         >
           {psDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
@@ -150,7 +147,7 @@ export function DealsClient({ deals, egs }: DealsClientProps) {
       )}
 
       {biggestDiscounts.length > 0 && (
-        <DealSection title="Biggest Discounts">
+        <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []}>
           {biggestDiscounts.map((d) => (
             <DealCard key={d.title} deal={d} image={dealImages[d.title] ?? null} />
           ))}
