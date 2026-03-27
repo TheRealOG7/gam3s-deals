@@ -20,6 +20,7 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
       href={game.store_url}
       target="_blank"
       rel="noopener noreferrer"
+      className="epic-free-card"
       style={{
         display: "block",
         flexShrink: 0,

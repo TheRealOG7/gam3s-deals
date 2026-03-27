@@ -175,7 +175,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
 
   return (
     <section style={{ marginBottom: 36 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid var(--border)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid var(--border)", flexWrap: "wrap" }}>
         {logo}
         {title && (
           <h2 style={{ fontSize: 13, fontWeight: 700, color: "var(--text)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
@@ -206,7 +206,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
           </button>
         )}
         {headerExtra && (
-          <div style={{ marginLeft: "auto", flexShrink: 0 }}>{headerExtra}</div>
+          <div className="section-header-extra">{headerExtra}</div>
         )}
       </div>
 

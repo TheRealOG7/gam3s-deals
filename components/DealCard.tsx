@@ -22,6 +22,7 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      className="deal-card-link"
       style={{
         display: "block",
         position: "relative",
@@ -64,17 +65,17 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
       </div>
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 9px", zIndex: 2 }}>
         <div style={{
-          fontSize: 11, fontWeight: 600, color: "var(--text)",
+          fontSize: 12, fontWeight: 600, color: "var(--text)",
           display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
           overflow: "hidden", marginBottom: 3, lineHeight: 1.35,
         }}>
           {deal.title}
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: "var(--text)" }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
             ${deal.sale_price}
           </span>
-          <span style={{ fontSize: 10, color: "var(--text-secondary)", textDecoration: "line-through" }}>
+          <span style={{ fontSize: 11, color: "var(--text-secondary)", textDecoration: "line-through" }}>
             ${deal.normal_price}
           </span>
         </div>

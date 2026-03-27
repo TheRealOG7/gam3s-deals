@@ -23,3 +23,28 @@ body {
 }
 
 a { text-decoration: none; color: inherit; }
+
+/* Section header — savings badge drops to its own row on small screens */
+.section-header-extra {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .section-header-extra {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 2px;
+  }
+  /* Savings badge: allow text to wrap instead of overflow */
+  .savings-badge {
+    white-space: normal !important;
+    line-height: 1.4 !important;
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
+  }
+  /* Deal cards: slightly larger on mobile for readability */
+  .deal-card-link { width: 170px !important; }
+  .epic-free-card { width: 235px !important; }
+}

@@ -73,10 +73,10 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   }
 
   const savingsBadge = totalSavings >= 1 ? (
-    <span style={{
+    <span className="savings-badge" style={{
       fontSize: 10, fontWeight: 800, textTransform: "uppercase",
       letterSpacing: "0.06em", padding: "3px 10px", borderRadius: 5,
-      background: "var(--green)", color: "#000",
+      background: "var(--green)", color: "#000", whiteSpace: "nowrap",
     }}>
       {`Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`}
     </span>
