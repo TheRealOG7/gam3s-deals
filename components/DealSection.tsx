@@ -50,7 +50,8 @@ function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { 
             onClick={onClose}
             style={{
               background: "none", border: "none", cursor: "pointer",
-              color: "var(--text-dim)", fontSize: 18, lineHeight: 1, padding: 4,
+              color: "var(--text-dim)", fontSize: 18, lineHeight: 1,
+              padding: "10px 4px 10px 20px", margin: "-10px -4px -10px 0",
             }}
           >
             ✕
@@ -73,7 +74,7 @@ function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { 
             >
               <span style={{ fontSize: 11, color: "var(--text-dim)", width: 20, flexShrink: 0 }}>{i + 1}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 2 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {deal.title}
                 </div>
                 {resolvedReviews?.[deal.title] ? (
@@ -219,7 +220,8 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
         <div
           ref={scrollRef}
           onScroll={onScroll}
-          style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}
+          className="card-scroll"
+          style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8 }}
         >
           {children}
         </div>

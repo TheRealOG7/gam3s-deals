@@ -80,7 +80,7 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           </span>
         </div>
         {reviewText && (
-          <div style={{ fontSize: 9, color: "var(--text-secondary)", marginTop: 3, opacity: 0.8 }}>
+          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3, opacity: 0.8 }}>
             {reviewText}
           </div>
         )}

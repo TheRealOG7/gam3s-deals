@@ -24,27 +24,51 @@ body {
 
 a { text-decoration: none; color: inherit; }
 
-/* Section header — savings badge drops to its own row on small screens */
+/* Safe area for notch/home-indicator devices */
+main {
+  padding-bottom: max(40px, calc(env(safe-area-inset-bottom) + 20px)) !important;
+}
+
+/* Section header extra — savings badge */
 .section-header-extra {
   margin-left: auto;
   flex-shrink: 0;
 }
 
+/* Scrollable card rows — hide scrollbar cross-browser */
+.card-scroll {
+  scrollbar-width: none;
+}
+.card-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Scroll snap — native card-by-card swipe on mobile */
+.card-scroll {
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+.deal-card-link,
+.epic-free-card {
+  scroll-snap-align: start;
+}
+
 @media (max-width: 640px) {
+  /* Savings badge drops to full-width centered row */
   .section-header-extra {
     width: 100%;
     margin-left: 0;
-    margin-top: 2px;
+    margin-top: 4px;
+    display: flex;
+    justify-content: center;
   }
-  /* Savings badge: allow text to wrap instead of overflow */
   .savings-badge {
     white-space: normal !important;
-    line-height: 1.4 !important;
+    line-height: 1.5 !important;
     text-align: center !important;
     display: block !important;
-    width: 100% !important;
+    padding: 5px 14px !important;
   }
-  /* Deal cards: slightly larger on mobile for readability */
+  /* Deal cards slightly wider on mobile */
   .deal-card-link { width: 170px !important; }
-  .epic-free-card { width: 235px !important; }
 }
