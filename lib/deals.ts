@@ -47,9 +47,14 @@ export function timeAgo(isoString: string | null): string {
   return `${Math.floor(diffHours / 24)} days ago`;
 }
 
-export async function fetchDeals(dashboardUrl: string): Promise<DealsData | null> {
+function authHeaders(apiKey?: string): HeadersInit {
+  return apiKey ? { "x-api-key": apiKey } : {};
+}
+
+export async function fetchDeals(dashboardUrl: string, apiKey?: string): Promise<DealsData | null> {
   try {
     const res = await fetch(`${dashboardUrl}/data/deals.json`, {
+      headers: authHeaders(apiKey),
       next: { revalidate: 300 },
     });
     if (!res.ok) return null;
@@ -59,9 +64,10 @@ export async function fetchDeals(dashboardUrl: string): Promise<DealsData | null
   }
 }
 
-export async function fetchEgsGames(dashboardUrl: string): Promise<EgsData | null> {
+export async function fetchEgsGames(dashboardUrl: string, apiKey?: string): Promise<EgsData | null> {
   try {
     const res = await fetch(`${dashboardUrl}/data/egs_free_games.json`, {
+      headers: authHeaders(apiKey),
       next: { revalidate: 300 },
     });
     if (!res.ok) return null;
