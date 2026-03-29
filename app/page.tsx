@@ -195,11 +195,11 @@ export default async function DealsPage() {
     fetchEgsGames(DASHBOARD_URL),
   ]);
 
+  // Only include sections that are actually displayed — top_rated is not shown
   const allDeals = [
     ...(deals?.best_deals ?? []),
     ...(deals?.gog_deals ?? []),
     ...(deals?.biggest_discounts ?? []),
-    ...(deals?.top_rated ?? []),
     ...(deals?.aaa_deals ?? []),
     ...(deals?.ps_deals ?? []),
   ];
