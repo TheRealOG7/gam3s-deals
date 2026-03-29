@@ -53,12 +53,15 @@ main {
   scroll-snap-align: start;
 }
 
+/* Savings banner: right-aligned on desktop, centered on mobile */
+.savings-banner { text-align: right; margin-bottom: 20px; }
+
 @media (max-width: 640px) {
+  .savings-banner { text-align: center; }
   /* Savings badge: allow text to wrap on narrow screens */
   .savings-badge {
     white-space: normal !important;
     line-height: 1.5 !important;
-    text-align: center !important;
   }
   /* Deal cards slightly wider on mobile */
   .deal-card-link { width: 170px !important; }

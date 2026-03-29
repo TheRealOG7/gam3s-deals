@@ -75,7 +75,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   return (
     <>
       {totalSavings >= 1 && (
-        <div style={{ marginBottom: 20, textAlign: "center" }}>
+        <div className="savings-banner">
           <span className="savings-badge" style={{
             display: "inline-block", fontSize: 10, fontWeight: 800,
             textTransform: "uppercase", letterSpacing: "0.06em",
