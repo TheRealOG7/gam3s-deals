@@ -1,6 +1,6 @@
 # Instant Gaming + Eneba Direct Deals — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add Instant Gaming and Eneba as dedicated deal sections in the dashboard backend and gam3s-deals frontend, with direct store URLs and no CheapShark dependency.
 
@@ -36,7 +36,7 @@
 **Files:**
 - Create: `/Users/og/Desktop/Claude/dashboard/scripts/instant_gaming_deals.py`
 
-- [ ] **Step 1: Create the file**
+- [x] **Step 1: Create the file**
 
 ```python
 #!/usr/bin/env python3
@@ -232,7 +232,7 @@ if __name__ == "__main__":
     print(json.dumps(data, indent=2))
 ```
 
-- [ ] **Step 2: Run the script to verify it works**
+- [x] **Step 2: Run the script to verify it works**
 
 ```bash
 cd /Users/og/Desktop/Claude/dashboard/scripts
@@ -241,11 +241,11 @@ python instant_gaming_deals.py 2>&1 | head -20
 
 Expected output (stderr): lines about fetching pages and final deal count. stdout: JSON with `ig_deals` array containing up to 15 deals, each with `title`, `sale_price`, `normal_price`, `savings_pct >= 20`, `deal_url` starting with `https://www.instant-gaming.com/en/`.
 
-- [ ] **Step 3: Spot-check one deal URL**
+- [x] **Step 3: Spot-check one deal URL**
 
 Take the `deal_url` from the first deal in the output and open it in a browser (or curl -sI it) to confirm it resolves to a valid IG product page.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/dashboard
@@ -268,7 +268,7 @@ git commit -m "feat: add Instant Gaming deals collector"
 > 5. Copy the index name from the request URL → this is `ENEBA_ALGOLIA_INDEX`
 > 6. Set these as env vars or hardcode them as constants in the script (they are read-only public keys)
 
-- [ ] **Step 1: Create the file with discovered credentials**
+- [x] **Step 1: Create the file with discovered credentials**
 
 Replace `YOUR_APP_ID`, `YOUR_API_KEY`, `YOUR_INDEX_NAME` with values found in step above.
 
@@ -454,13 +454,13 @@ if __name__ == "__main__":
     print(json.dumps(data, indent=2))
 ```
 
-- [ ] **Step 2: Discover Algolia credentials and update constants**
+- [x] **Step 2: Discover Algolia credentials and update constants**
 
 Open browser devtools at `https://www.eneba.com/store/all?platform[]=pc&sort=discount_desc&type[]=game`, inspect a network request to `algolia.net`, and fill in `YOUR_APP_ID`, `YOUR_API_KEY`, `YOUR_INDEX_NAME`.
 
 Also inspect one hit in the response to confirm the exact field names for price/originalPrice/discountPercentage — update `parse_deal()` if the names differ.
 
-- [ ] **Step 3: Run the script**
+- [x] **Step 3: Run the script**
 
 ```bash
 cd /Users/og/Desktop/Claude/dashboard/scripts
@@ -469,7 +469,7 @@ python eneba_deals.py 2>&1 | head -20
 
 Expected: JSON with `eneba_deals` array, each deal having a `deal_url` starting with `https://www.eneba.com/` and `savings_pct >= 20`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/dashboard
@@ -484,14 +484,14 @@ git commit -m "feat: add Eneba deals collector"
 **Files:**
 - Modify: `/Users/og/Desktop/Claude/dashboard/scripts/build_dashboard.py`
 
-- [ ] **Step 1: Add snapshot path constants** (after the existing `QUEST_SNAPSHOTS` line ~line 31)
+- [x] **Step 1: Add snapshot path constants** (after the existing `QUEST_SNAPSHOTS` line ~line 31)
 
 ```python
 IG_SNAPSHOTS = SCRIPTS_DIR / "ig_data" / "daily_snapshots.json"
 ENEBA_SNAPSHOTS = SCRIPTS_DIR / "eneba_data" / "daily_snapshots.json"
 ```
 
-- [ ] **Step 2: Load IG and Eneba snapshots in `build_deals_data()`**
+- [x] **Step 2: Load IG and Eneba snapshots in `build_deals_data()`**
 
 After the existing `# --- PlatPrices ---` block (around line 598), add:
 
@@ -515,7 +515,7 @@ After the existing `# --- PlatPrices ---` block (around line 598), add:
             eneba_deals = eneba_data.get("eneba_deals", [])
 ```
 
-- [ ] **Step 3: Add `ig_deals` and `eneba_deals` to the return dict in `build_deals_data()`**
+- [x] **Step 3: Add `ig_deals` and `eneba_deals` to the return dict in `build_deals_data()`**
 
 Change the return statement from:
 ```python
@@ -546,7 +546,7 @@ To:
     }
 ```
 
-- [ ] **Step 4: Add scripts to COLLECTORS list**
+- [x] **Step 4: Add scripts to COLLECTORS list**
 
 In the `COLLECTORS` list (around line 1313), add after `"platprices_deals.py"`:
 ```python
@@ -554,7 +554,7 @@ In the `COLLECTORS` list (around line 1313), add after `"platprices_deals.py"`:
     "eneba_deals.py",
 ```
 
-- [ ] **Step 5: Verify by running build_dashboard.py**
+- [x] **Step 5: Verify by running build_dashboard.py**
 
 ```bash
 cd /Users/og/Desktop/Claude/dashboard/scripts
@@ -570,7 +570,7 @@ python -c "import json; d=json.load(open('../docs/data/deals.json')); print('ig_
 
 Expected: `ig_deals: 15 eneba_deals: 15` (or fewer if not enough qualifying deals).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/dashboard
@@ -585,7 +585,7 @@ git commit -m "feat: include Instant Gaming and Eneba deals in deals.json"
 **Files:**
 - Modify: `/Users/og/Desktop/Claude/gam3s-deals/lib/deals.ts`
 
-- [ ] **Step 1: Add `ig_deals` and `eneba_deals` to `DealsData` interface**
+- [x] **Step 1: Add `ig_deals` and `eneba_deals` to `DealsData` interface**
 
 Change:
 ```typescript
@@ -616,7 +616,7 @@ export interface DealsData {
 }
 ```
 
-- [ ] **Step 2: Run existing tests to confirm no breakage**
+- [x] **Step 2: Run existing tests to confirm no breakage**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -625,7 +625,7 @@ npm test 2>&1 | tail -10
 
 Expected: all tests pass.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -641,7 +641,7 @@ git commit -m "feat: add ig_deals and eneba_deals to DealsData interface"
 - Create: `/Users/og/Desktop/Claude/gam3s-deals/public/logos/instant-gaming.png`
 - Create: `/Users/og/Desktop/Claude/gam3s-deals/public/logos/eneba.png`
 
-- [ ] **Step 1: Download Instant Gaming logo**
+- [x] **Step 1: Download Instant Gaming logo**
 
 ```bash
 curl -sL "https://www.instant-gaming.com/static/build/img/logo/instant-gaming.svg" \
@@ -650,7 +650,7 @@ curl -sL "https://www.instant-gaming.com/static/build/img/logo/instant-gaming.sv
 
 If that 404s, download from their press kit or take a screenshot of the logo from their site. The logo should be white/light for display on dark backgrounds — their favicon or header logo works. Save as `instant-gaming.png`, width ~120px.
 
-- [ ] **Step 2: Download Eneba logo**
+- [x] **Step 2: Download Eneba logo**
 
 ```bash
 curl -sL "https://assets.eneba.games/static/logo/eneba-logo-white.svg" \
@@ -661,7 +661,7 @@ curl -sL "https://www.eneba.com/static/logo.svg" \
 
 If automated download fails: visit `https://www.eneba.com`, right-click the logo in the header, save as `eneba.png` or `eneba.svg`. White/light variant preferred for dark background.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -676,7 +676,7 @@ git commit -m "feat: add Instant Gaming and Eneba store logos"
 **Files:**
 - Modify: `/Users/og/Desktop/Claude/gam3s-deals/app/page.tsx`
 
-- [ ] **Step 1: Add `ig_deals` and `eneba_deals` to the `allDeals` pool**
+- [x] **Step 1: Add `ig_deals` and `eneba_deals` to the `allDeals` pool**
 
 In `DealsPage()`, change the `allDeals` array (around line 199) from:
 ```typescript
@@ -701,7 +701,7 @@ To:
   ];
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -716,7 +716,7 @@ git commit -m "feat: include IG and Eneba deals in savings pool and dedup"
 **Files:**
 - Modify: `/Users/og/Desktop/Claude/gam3s-deals/components/DealsClient.tsx`
 
-- [ ] **Step 1: Add IG and Eneba to `allSections` and `buildBestDeals` input**
+- [x] **Step 1: Add IG and Eneba to `allSections` and `buildBestDeals` input**
 
 Change the `allSections` array (around line 53):
 ```typescript
@@ -734,7 +734,7 @@ To:
   ] : [];
 ```
 
-- [ ] **Step 2: Add filtered deal arrays for IG and Eneba**
+- [x] **Step 2: Add filtered deal arrays for IG and Eneba**
 
 After the `const biggestDiscounts = ...` line (around line 63), add:
 ```typescript
@@ -742,7 +742,7 @@ After the `const biggestDiscounts = ...` line (around line 63), add:
   const enebaDeals = deals ? filterBest(deals.eneba_deals ?? [], bestMap) : [];
 ```
 
-- [ ] **Step 3: Add two new `DealSection` rows after the Biggest Discounts section**
+- [x] **Step 3: Add two new `DealSection` rows after the Biggest Discounts section**
 
 After the closing `)}` of the `biggestDiscounts.length > 0` block (around line 143), add:
 
@@ -776,7 +776,7 @@ After the closing `)}` of the `biggestDiscounts.length > 0` block (around line 1
       )}
 ```
 
-- [ ] **Step 4: Run the dev server and visually verify**
+- [x] **Step 4: Run the dev server and visually verify**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -789,7 +789,7 @@ Open `http://localhost:3000`. Confirm:
 - Cards show correct prices, discount badges, and direct store links
 - Deal URLs open correctly in a new tab
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 ```bash
 npm test 2>&1 | tail -10
@@ -797,7 +797,7 @@ npm test 2>&1 | tail -10
 
 Expected: all pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -812,7 +812,7 @@ git commit -m "feat: add Instant Gaming and Eneba deal sections to frontend"
 **Files:**
 - Modify: `/Users/og/Desktop/Claude/gam3s-deals/__tests__/deals.test.ts`
 
-- [ ] **Step 1: Update the `DealsData` fixture to include new fields**
+- [x] **Step 1: Update the `DealsData` fixture to include new fields**
 
 The existing test file doesn't test `DealsData` shape directly, but add a type-safety smoke test. Add after the existing `describe("fetchDeals", ...)` block:
 
@@ -837,7 +837,7 @@ describe("DealsData shape", () => {
 });
 ```
 
-- [ ] **Step 2: Run tests**
+- [x] **Step 2: Run tests**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
@@ -846,7 +846,7 @@ npm test 2>&1 | tail -15
 
 Expected: all tests pass including the new one.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/og/Desktop/Claude/gam3s-deals
