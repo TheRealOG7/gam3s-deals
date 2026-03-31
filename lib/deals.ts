@@ -24,6 +24,8 @@ export interface DealsData {
   aaa_deals: Deal[];
   gog_deals: Deal[];
   ps_deals: Deal[];
+  ig_deals: Deal[];
+  eneba_deals: Deal[];
 }
 
 export interface EpicGame {
