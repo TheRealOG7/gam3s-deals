@@ -53,6 +53,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
+    deals.ig_deals, deals.eneba_deals,
   ] : [];
 
   const bestMap = buildBestDeals(allSections);
@@ -61,6 +62,8 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   const aaadeals = deals ? filterBest(deals.aaa_deals ?? [], bestMap) : [];
   const psDeals = deals ? filterBest(deals.ps_deals ?? [], bestMap) : [];
   const biggestDiscounts = deals ? filterBest(deals.biggest_discounts ?? [], bestMap) : [];
+  const igDeals = deals ? filterBest(deals.ig_deals ?? [], bestMap) : [];
+  const enebaDeals = deals ? filterBest(deals.eneba_deals ?? [], bestMap) : [];
 
   const epicGames = egs ? [...(egs.current_free ?? []), ...(egs.upcoming_free ?? [])] : [];
 
@@ -137,6 +140,34 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       {biggestDiscounts.length > 0 && (
         <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []} resolvedUrls={urls} resolvedReviews={reviews}>
           {biggestDiscounts.map((d) => (
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
+          ))}
+        </DealSection>
+      )}
+
+      {igDeals.length > 0 && (
+        <DealSection
+          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
+          title="Deals"
+          allDeals={deals?.ig_deals ?? []}
+          resolvedUrls={urls}
+          resolvedReviews={reviews}
+        >
+          {igDeals.map((d) => (
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
+          ))}
+        </DealSection>
+      )}
+
+      {enebaDeals.length > 0 && (
+        <DealSection
+          logo={<Image src="/logos/eneba.png" alt="Eneba" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
+          title="Deals"
+          allDeals={deals?.eneba_deals ?? []}
+          resolvedUrls={urls}
+          resolvedReviews={reviews}
+        >
+          {enebaDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
