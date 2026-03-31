@@ -202,6 +202,8 @@ export default async function DealsPage() {
     ...(deals?.biggest_discounts ?? []),
     ...(deals?.aaa_deals ?? []),
     ...(deals?.ps_deals ?? []),
+    ...(deals?.ig_deals ?? []),
+    ...(deals?.eneba_deals ?? []),
   ];
   const epicGames = [
     ...(egs?.current_free ?? []),
