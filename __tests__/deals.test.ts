@@ -33,6 +33,27 @@ describe("mergeDeals", () => {
   });
 });
 
+describe("DealsData shape", () => {
+  it("has ig_deals field", () => {
+    const data: import("@/lib/deals").DealsData = {
+      updated: "", pc_source: "",
+      best_deals: [], biggest_discounts: [], top_rated: [],
+      aaa_deals: [], gog_deals: [], ps_deals: [],
+      ig_deals: [], eneba_deals: [],
+    };
+    expect(Array.isArray(data.ig_deals)).toBe(true);
+  });
+  it("has eneba_deals field", () => {
+    const data: import("@/lib/deals").DealsData = {
+      updated: "", pc_source: "",
+      best_deals: [], biggest_discounts: [], top_rated: [],
+      aaa_deals: [], gog_deals: [], ps_deals: [],
+      ig_deals: [], eneba_deals: [],
+    };
+    expect(Array.isArray(data.eneba_deals)).toBe(true);
+  });
+});
+
 describe("fetchDeals", () => {
   beforeEach(() => vi.resetAllMocks());
   it("returns null on network error", async () => {
