@@ -361,12 +361,20 @@ export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> 
           ? `https://www.microsoft.com/store/apps/${productId}`
           : "https://www.xbox.com/en-US/games/game-pass";
 
-        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl, _listPrice: listPrice } as GamePassGame & { _listPrice: number };
+        const ratingObj = product.AggregateRating as Record<string, number> | undefined;
+        const avgRating = ratingObj?.AverageRating ?? 0;
+        const ratingCount = ratingObj?.RatingCount ?? 0;
+        // Weighted popularity score: rating × log(reviewCount) — rewards well-rated + widely reviewed
+        const _score = avgRating > 0 && ratingCount > 0
+          ? avgRating * Math.log10(Math.max(ratingCount, 10))
+          : 0;
+
+        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl, _score } as GamePassGame & { _score: number };
       })
-      .filter((g): g is GamePassGame & { _listPrice: number } => g !== null)
-      // Sort by original retail price desc — proxy for game quality/size
-      .sort((a, b) => (b._listPrice ?? 0) - (a._listPrice ?? 0))
-      .map(({ _listPrice: _lp, ...g }) => g)
+      .filter((g): g is GamePassGame & { _score: number } => g !== null)
+      // Sort by weighted popularity score desc — surfaces well-rated + widely reviewed games
+      .sort((a, b) => (b._score ?? 0) - (a._score ?? 0))
+      .map(({ _score: _s, ...g }) => g)
       .slice(0, display);
 
     cache.set(catalogUrl, { data: games, ts: Date.now() });

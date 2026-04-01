@@ -169,7 +169,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {psDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
+          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} />}
           title="Deals"
           allDeals={deals?.ps_deals ?? []}
           resolvedUrls={urls}
