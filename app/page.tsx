@@ -159,7 +159,16 @@ async function resolveImages(
   }
   for (const g of epicGames) {
     keys.push(g.title);
-    fns.push(() => lookupRawgImage(g.title));
+    fns.push(async () => {
+      const rawg = await lookupRawgImage(g.title);
+      if (rawg) return rawg;
+      // Fall back to Steam CDN when RAWG has no result
+      const appId = await findSteamAppId(g.title);
+      if (!appId) return null;
+      const portrait = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/library_600x900.jpg`;
+      const ok = await steamPortraitExists(portrait);
+      return ok ? portrait : `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/capsule_616x353.jpg`;
+    });
   }
   for (const g of psGames) {
     keys.push(g.title);
@@ -200,7 +209,7 @@ export default async function DealsPage() {
     fetchIgDealsLive(),
     fetchEnebaDealsLive(),
     fetchPsPlusFreeGames(),
-    fetchGamePassGames(),
+    fetchGamePassGames(25),
   ]);
 
   // Inject live IG/Eneba data when the backend hasn't been updated yet

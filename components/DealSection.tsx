@@ -14,6 +14,7 @@ interface DealSectionProps {
   headerExtra?: ReactNode;
   children: ReactNode;
   style?: React.CSSProperties;
+  viewAllHref?: string;
 }
 
 const badgeStyles: Record<string, React.CSSProperties> = {
@@ -110,7 +111,7 @@ function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { 
   );
 }
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, resolvedReviews, headerExtra, children, style }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, resolvedReviews, headerExtra, children, style, viewAllHref }: DealSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -206,6 +207,22 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
           >
             View All
           </button>
+        )}
+        {viewAllHref && (
+          <a
+            href={viewAllHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: "auto", flexShrink: 0,
+              background: "var(--green)", color: "#000",
+              fontSize: 10, fontWeight: 800, padding: "3px 10px",
+              borderRadius: 5, textDecoration: "none",
+              letterSpacing: "0.04em", textTransform: "uppercase",
+            }}
+          >
+            View All
+          </a>
         )}
         {headerExtra && (
           <div className="section-header-extra">{headerExtra}</div>
