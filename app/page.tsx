@@ -209,7 +209,7 @@ export default async function DealsPage() {
     fetchIgDealsLive(),
     fetchEnebaDealsLive(),
     fetchPsPlusFreeGames(),
-    fetchGamePassGames(25),
+    fetchGamePassGames(100),
   ]);
 
   // Inject live IG/Eneba data when the backend hasn't been updated yet

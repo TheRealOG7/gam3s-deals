@@ -62,10 +62,26 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
   const bestMap = buildBestDeals(allSections);
 
-  const bestDeals = deals ? filterBest([...(deals.best_deals ?? []), ...(deals.gog_deals ?? [])], bestMap) : [];
-  const aaadeals = deals ? filterBest(deals.aaa_deals ?? [], bestMap) : [];
+  // Sort combined pool by savings_pct first so the highest-discount version wins deduplication
+  const sortBySavings = (arr: Deal[]) => [...arr].sort((a, b) => b.savings_pct - a.savings_pct);
+
+  const bestDealsPool = sortBySavings([
+    ...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? []),
+    ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
+  ]);
+  const biggestDiscountsPool = sortBySavings([
+    ...(deals?.biggest_discounts ?? []),
+    ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
+  ]);
+  const aaaPool = sortBySavings([
+    ...(deals?.aaa_deals ?? []),
+    ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
+  ]);
+
+  const bestDeals = deals ? filterBest(bestDealsPool, bestMap) : [];
+  const aaadeals = deals ? filterBest(aaaPool, bestMap) : [];
   const psDeals = deals ? filterBest(deals.ps_deals ?? [], bestMap) : [];
-  const biggestDiscounts = deals ? filterBest(deals.biggest_discounts ?? [], bestMap) : [];
+  const biggestDiscounts = deals ? filterBest(biggestDiscountsPool, bestMap) : [];
   const igDeals = deals ? filterBest(deals.ig_deals ?? [], bestMap) : [];
   const enebaDeals = deals ? filterBest(deals.eneba_deals ?? [], bestMap) : [];
 
@@ -143,16 +159,16 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           logo={<Image src="/logos/xbox.png" alt="Xbox" width={82} height={25} unoptimized style={{ width: 82, height: 25, objectFit: "contain" }} />}
           badge="Included in Game Pass"
           badgeColor="dim"
-          viewAllHref="https://www.xbox.com/en-US/games/game-pass/games"
+          allPassGames={gamePassGames}
         >
-          {gamePassGames.map((g) => (
+          {gamePassGames.slice(0, 25).map((g) => (
             <GamePassCard key={g.title} game={g} />
           ))}
         </DealSection>
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals" allDeals={[...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? [])]} resolvedUrls={urls} resolvedReviews={reviews}>
+        <DealSection title="Best Deals" allDeals={bestDealsPool} resolvedUrls={urls} resolvedReviews={reviews}>
           {bestDeals.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
@@ -160,7 +176,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       )}
 
       {aaadeals.length > 0 && (
-        <DealSection title="AAA on Sale" allDeals={deals?.aaa_deals ?? []} resolvedUrls={urls} resolvedReviews={reviews}>
+        <DealSection title="AAA on Sale" allDeals={aaaPool} resolvedUrls={urls} resolvedReviews={reviews}>
           {aaadeals.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
@@ -182,7 +198,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       )}
 
       {biggestDiscounts.length > 0 && (
-        <DealSection title="Biggest Discounts" allDeals={deals?.biggest_discounts ?? []} resolvedUrls={urls} resolvedReviews={reviews}>
+        <DealSection title="Biggest Discounts" allDeals={biggestDiscountsPool} resolvedUrls={urls} resolvedReviews={reviews}>
           {biggestDiscounts.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}

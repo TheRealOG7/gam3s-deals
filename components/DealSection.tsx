@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, type ReactNode } from "react";
-import type { Deal } from "@/lib/deals";
+import type { Deal, GamePassGame } from "@/lib/deals";
 
 interface DealSectionProps {
   title?: string;
@@ -9,6 +9,7 @@ interface DealSectionProps {
   badge?: string;
   badgeColor?: "green" | "dim";
   allDeals?: Deal[];
+  allPassGames?: GamePassGame[];
   resolvedUrls?: Record<string, string>;
   resolvedReviews?: Record<string, { text: string; count: number } | null>;
   headerExtra?: ReactNode;
@@ -22,43 +23,89 @@ const badgeStyles: Record<string, React.CSSProperties> = {
   dim: { background: "rgba(255,255,255,0.08)", color: "var(--text-secondary)" },
 };
 
-function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { title: string; deals: Deal[]; resolvedUrls?: Record<string, string>; resolvedReviews?: Record<string, { text: string; count: number } | null>; onClose: () => void }) {
+const modalOverlay: React.CSSProperties = {
+  position: "fixed", inset: 0, zIndex: 1000,
+  background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  padding: 16,
+};
+const modalBox: React.CSSProperties = {
+  background: "var(--card)", border: "1px solid var(--border)",
+  borderRadius: 12, width: "100%", maxWidth: 680,
+  maxHeight: "80vh", display: "flex", flexDirection: "column",
+};
+const modalHeaderRow: React.CSSProperties = {
+  display: "flex", alignItems: "center", justifyContent: "space-between",
+  padding: "14px 18px", borderBottom: "1px solid var(--border)", flexShrink: 0,
+};
+const modalCloseBtn: React.CSSProperties = {
+  background: "none", border: "none", cursor: "pointer",
+  color: "var(--text-dim)", fontSize: 18, lineHeight: 1,
+  padding: "10px 4px 10px 20px", margin: "-10px -4px -10px 0",
+};
+
+function ModalHeader({ title, onClose }: { title: ReactNode; onClose: () => void }) {
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: 16,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: "var(--card)", border: "1px solid var(--border)",
-          borderRadius: 12, width: "100%", maxWidth: 680,
-          maxHeight: "80vh", display: "flex", flexDirection: "column",
-        }}
-      >
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "14px 18px", borderBottom: "1px solid var(--border)", flexShrink: 0,
-        }}>
+    <div style={modalHeaderRow}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {typeof title === "string" ? (
           <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text)" }}>
             {title}
           </span>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none", border: "none", cursor: "pointer",
-              color: "var(--text-dim)", fontSize: 18, lineHeight: 1,
-              padding: "10px 4px 10px 20px", margin: "-10px -4px -10px 0",
-            }}
-          >
-            ✕
-          </button>
+        ) : title}
+      </div>
+      <button onClick={onClose} style={modalCloseBtn}>✕</button>
+    </div>
+  );
+}
+
+function GamePassModal({ title, games, onClose }: { title: ReactNode; games: GamePassGame[]; onClose: () => void }) {
+  return (
+    <div onClick={onClose} style={modalOverlay}>
+      <div onClick={(e) => e.stopPropagation()} style={modalBox}>
+        <ModalHeader title={title} onClose={onClose} />
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {games.map((game, i) => (
+            <a
+              key={game.title}
+              href={game.store_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 18px", borderBottom: "1px solid var(--border)", cursor: "pointer", textDecoration: "none" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <span style={{ fontSize: 11, color: "var(--text-dim)", width: 20, flexShrink: 0 }}>{i + 1}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {game.title}
+                </div>
+                {game.original_price && (
+                  <div style={{ fontSize: 11, color: "var(--text-dim)", marginTop: 1 }}>Retail {game.original_price}</div>
+                )}
+              </div>
+              <span style={{ fontSize: 10, fontWeight: 800, padding: "2px 7px", borderRadius: 5, background: "#107C10", color: "#fff", flexShrink: 0 }}>
+                FREE
+              </span>
+            </a>
+          ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { title: ReactNode; deals: Deal[]; resolvedUrls?: Record<string, string>; resolvedReviews?: Record<string, { text: string; count: number } | null>; onClose: () => void }) {
+  return (
+    <div
+      onClick={onClose}
+      style={modalOverlay}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={modalBox}
+      >
+        <ModalHeader title={title} onClose={onClose} />
         <div style={{ overflowY: "auto", flex: 1 }}>
           {deals.map((deal, i) => (
             <a
@@ -111,7 +158,7 @@ function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { 
   );
 }
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, resolvedReviews, headerExtra, children, style, viewAllHref }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, allPassGames, resolvedUrls, resolvedReviews, headerExtra, children, style, viewAllHref }: DealSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -174,7 +221,19 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
     border: "1px solid rgba(255,255,255,0.14)",
   };
 
-  const sectionLabel = title ?? "Deals";
+  // Modal title includes the logo when present (e.g. "PlayStation logo + Deals")
+  const modalTitle: ReactNode = logo ? (
+    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      {logo}
+      {title && <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text)" }}>{title}</span>}
+    </span>
+  ) : (
+    <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--text)" }}>
+      {title ?? "Deals"}
+    </span>
+  );
+
+  const hasViewAll = (allDeals && allDeals.length > 0) || (allPassGames && allPassGames.length > 0);
 
   return (
     <section style={{ marginBottom: 36, ...style }}>
@@ -194,7 +253,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
             {badge}
           </span>
         )}
-        {allDeals && allDeals.length > 0 && (
+        {hasViewAll && (
           <button
             onClick={() => setModalOpen(true)}
             style={{
@@ -208,7 +267,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
             View All
           </button>
         )}
-        {viewAllHref && (
+        {viewAllHref && !hasViewAll && (
           <a
             href={viewAllHref}
             target="_blank"
@@ -250,8 +309,11 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
         )}
       </div>
 
-      {modalOpen && allDeals && (
-        <DealsModal title={sectionLabel} deals={allDeals} resolvedUrls={resolvedUrls} resolvedReviews={resolvedReviews} onClose={() => setModalOpen(false)} />
+      {modalOpen && allPassGames && (
+        <GamePassModal title={modalTitle} games={allPassGames} onClose={() => setModalOpen(false)} />
+      )}
+      {modalOpen && allDeals && !allPassGames && (
+        <DealsModal title={modalTitle} deals={allDeals} resolvedUrls={resolvedUrls} resolvedReviews={resolvedReviews} onClose={() => setModalOpen(false)} />
       )}
     </section>
   );

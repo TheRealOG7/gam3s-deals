@@ -295,16 +295,20 @@ function seededShuffle<T>(arr: T[], seed: number): T[] {
   return result;
 }
 
+const GAMEPASS_CACHE_KEY = "gamepass_sorted";
+
 export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> {
-  const catalogUrl = "https://catalog.gamepass.com/sigls/v2?id=fdd9e2a7-0fee-49f6-ad69-4354098401ff&language=en-us&market=US";
-  const cached = cache.get(catalogUrl);
-  if (cached && Date.now() - cached.ts < TTL) return cached.data as GamePassGame[];
+  const cached = cache.get(GAMEPASS_CACHE_KEY);
+  if (cached && Date.now() - cached.ts < TTL) return (cached.data as GamePassGame[]).slice(0, display);
 
   try {
-    const catalogRes = await fetch(catalogUrl, {
-      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
-      signal: AbortSignal.timeout(8000),
-    });
+    const catalogRes = await fetch(
+      "https://catalog.gamepass.com/sigls/v2?id=fdd9e2a7-0fee-49f6-ad69-4354098401ff&language=en-us&market=US",
+      {
+        headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+        signal: AbortSignal.timeout(8000),
+      }
+    );
     if (!catalogRes.ok) return [];
 
     const catalog = await catalogRes.json() as Array<Record<string, unknown>>;
@@ -315,23 +319,29 @@ export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> 
     if (allIds.length === 0) return [];
 
     // Shuffle using a seed tied to the current TTL window — rotates every 5 min
+    // Sample 200 for enough variety when sorting by rating
     const seed = Math.floor(Date.now() / TTL);
-    const sampledIds = seededShuffle(allIds, seed).slice(0, display + 10);
+    const sampledIds = seededShuffle(allIds, seed).slice(0, 200);
 
-    const detailsRes = await fetch(
-      `https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${sampledIds.join(",")}&market=US&languages=en-us`,
-      {
-        headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
-        signal: AbortSignal.timeout(10000),
-      }
-    );
-    if (!detailsRes.ok) return [];
+    // Fetch in batches of 100 (URL length limit)
+    const allProducts: Record<string, unknown>[] = [];
+    for (let i = 0; i < sampledIds.length; i += 100) {
+      const batch = sampledIds.slice(i, i + 100);
+      const res = await fetch(
+        `https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${batch.join(",")}&market=US&languages=en-us`,
+        {
+          headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+          signal: AbortSignal.timeout(12000),
+        }
+      );
+      if (!res.ok) continue;
+      const data = await res.json() as Record<string, unknown>;
+      allProducts.push(...((data.Products as Record<string, unknown>[]) ?? []));
+    }
 
-    const details = await detailsRes.json() as Record<string, unknown>;
-    const products = (details.Products as Record<string, unknown>[]) ?? [];
-
-    const games: GamePassGame[] = products
-      .map((product): GamePassGame | null => {
+    type ScoredGame = GamePassGame & { _score: number };
+    const games: GamePassGame[] = allProducts
+      .map((product): ScoredGame | null => {
         const localized = (product.LocalizedProperties as Record<string, unknown>[])?.[0];
         if (!localized) return null;
 
@@ -369,16 +379,16 @@ export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> 
           ? avgRating * Math.log10(Math.max(ratingCount, 10))
           : 0;
 
-        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl, _score } as GamePassGame & { _score: number };
+        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl, _score };
       })
-      .filter((g): g is GamePassGame & { _score: number } => g !== null)
+      .filter((g): g is ScoredGame => g !== null)
       // Sort by weighted popularity score desc — surfaces well-rated + widely reviewed games
-      .sort((a, b) => (b._score ?? 0) - (a._score ?? 0))
-      .map(({ _score: _s, ...g }) => g)
-      .slice(0, display);
+      .sort((a, b) => b._score - a._score)
+      .map(({ _score: _s, ...g }) => g);
 
-    cache.set(catalogUrl, { data: games, ts: Date.now() });
-    return games;
+    // Cache the full sorted list; callers slice to their display count
+    cache.set(GAMEPASS_CACHE_KEY, { data: games, ts: Date.now() });
+    return games.slice(0, display);
   } catch {
     return [];
   }
