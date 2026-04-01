@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { DealsClient } from "@/components/DealsClient";
-import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames } from "@/lib/deals";
+import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
 import type { Deal, EpicGame, PsGame } from "@/lib/deals";
 
@@ -195,11 +195,12 @@ async function resolveUrls(deals: Deal[]): Promise<Record<string, string>> {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DealsPage() {
-  const [[rawDeals, egs], liveIg, liveEneba, psGames] = await Promise.all([
+  const [[rawDeals, egs], liveIg, liveEneba, psGames, gamePassGames] = await Promise.all([
     Promise.all([fetchDeals(DASHBOARD_URL), fetchEgsGames(DASHBOARD_URL)]),
     fetchIgDealsLive(),
     fetchEnebaDealsLive(),
     fetchPsPlusFreeGames(),
+    fetchGamePassGames(),
   ]);
 
   // Inject live IG/Eneba data when the backend hasn't been updated yet
@@ -252,7 +253,7 @@ export default async function DealsPage() {
 
   return (
     <main style={{ padding: "12px 16px 40px" }}>
-      <DealsClient deals={deals} egs={egs} images={images} urls={urls} reviews={reviews} totalSavings={totalSavings} dealCount={uniqueDeals.length} psGames={psGames} />
+      <DealsClient deals={deals} egs={egs} images={images} urls={urls} reviews={reviews} totalSavings={totalSavings} dealCount={uniqueDeals.length} psGames={psGames} gamePassGames={gamePassGames} />
     </main>
   );
 }

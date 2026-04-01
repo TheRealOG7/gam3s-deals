@@ -51,6 +51,13 @@ export interface PsGame {
   image_url?: string | null;
 }
 
+export interface GamePassGame {
+  title: string;
+  original_price?: string;
+  store_url: string;
+  image_url?: string | null;
+}
+
 export function timeAgo(isoString: string | null): string {
   if (!isoString) return "unknown";
   const diffMs = Date.now() - new Date(isoString).getTime();
@@ -274,6 +281,80 @@ const PS_PLUS_MONTHLY: PsGame[] = [
 
 export async function fetchPsPlusFreeGames(): Promise<PsGame[]> {
   return PS_PLUS_MONTHLY;
+}
+
+export async function fetchGamePassGames(limit = 15): Promise<GamePassGame[]> {
+  const catalogUrl = "https://catalog.gamepass.com/sigls/v2?id=fdd9e2a7-0fee-49f6-ad69-4354098401ff&language=en-us&market=US";
+  const cached = cache.get(catalogUrl);
+  if (cached && Date.now() - cached.ts < TTL) return cached.data as GamePassGame[];
+
+  try {
+    const catalogRes = await fetch(catalogUrl, {
+      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!catalogRes.ok) return [];
+
+    const catalog = await catalogRes.json() as Array<Record<string, unknown>>;
+    const ids = catalog
+      .filter(item => typeof item.id === "string")
+      .map(item => item.id as string)
+      .slice(0, limit);
+
+    if (ids.length === 0) return [];
+
+    const detailsRes = await fetch(
+      `https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${ids.join(",")}&market=US&languages=en-us`,
+      {
+        headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+        signal: AbortSignal.timeout(10000),
+      }
+    );
+    if (!detailsRes.ok) return [];
+
+    const details = await detailsRes.json() as Record<string, unknown>;
+    const products = (details.Products as Record<string, unknown>[]) ?? [];
+
+    const games: GamePassGame[] = products
+      .map((product): GamePassGame | null => {
+        const localized = (product.LocalizedProperties as Record<string, unknown>[])?.[0];
+        if (!localized) return null;
+
+        const title = String(localized.ProductTitle ?? "").trim();
+        if (!title) return null;
+
+        const images = (localized.Images as Record<string, unknown>[]) ?? [];
+        const cover =
+          images.find(img => img.ImagePurpose === "SuperHeroArt") ??
+          images.find(img => img.ImagePurpose === "TitledHeroArt") ??
+          images.find(img => img.ImagePurpose === "BoxArt") ??
+          images.find(img => img.ImagePurpose === "Poster") ??
+          images[0];
+        const rawUri = cover ? String(cover.Uri ?? "") : "";
+        const imageUrl = rawUri
+          ? rawUri.startsWith("//") ? `https:${rawUri}` : rawUri
+          : null;
+
+        const skus = (product.DisplaySkuAvailabilities as Record<string, unknown>[]) ?? [];
+        const availabilities = (skus[0]?.Availabilities as Record<string, unknown>[]) ?? [];
+        const priceObj = (availabilities[0]?.OrderManagementData as Record<string, unknown>)?.Price as Record<string, number> | undefined;
+        const listPrice = priceObj?.ListPrice;
+        const priceStr = listPrice && listPrice > 0 ? `$${listPrice.toFixed(2)}` : undefined;
+
+        const productId = String(product.ProductId ?? "");
+        const storeUrl = productId
+          ? `https://www.microsoft.com/store/apps/${productId}`
+          : "https://www.xbox.com/en-US/games/game-pass";
+
+        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl };
+      })
+      .filter((g): g is GamePassGame => g !== null);
+
+    cache.set(catalogUrl, { data: games, ts: Date.now() });
+    return games;
+  } catch {
+    return [];
+  }
 }
 
 export function mergeDeals(a: Deal[], b: Deal[]): Deal[] {

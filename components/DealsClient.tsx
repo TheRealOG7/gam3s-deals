@@ -4,8 +4,9 @@ import Image from "next/image";
 import { DealCard } from "@/components/DealCard";
 import { EpicFreeCard } from "@/components/EpicFreeCard";
 import { PsPlusCard } from "@/components/PsPlusCard";
+import { GamePassCard } from "@/components/GamePassCard";
 import { DealSection } from "@/components/DealSection";
-import type { Deal, DealsData, EgsData, PsGame } from "@/lib/deals";
+import type { Deal, DealsData, EgsData, PsGame, GamePassGame } from "@/lib/deals";
 
 function normalizeTitle(title: string): string {
   return title
@@ -49,9 +50,10 @@ interface DealsClientProps {
   totalSavings: number;
   dealCount: number;
   psGames: PsGame[];
+  gamePassGames: GamePassGame[];
 }
 
-export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames, gamePassGames }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -134,6 +136,27 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
             </div>
           )}
         </div>
+      )}
+
+      {gamePassGames.length > 0 && (
+        <DealSection
+          logo={
+            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+              <svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="11" cy="11" r="11" fill="#107C10"/>
+                <line x1="6.5" y1="6.5" x2="15.5" y2="15.5" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+                <line x1="15.5" y1="6.5" x2="6.5" y2="15.5" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+              </svg>
+              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Game Pass</span>
+            </div>
+          }
+          badge="Included"
+          badgeColor="dim"
+        >
+          {gamePassGames.map((g) => (
+            <GamePassCard key={g.title} game={g} />
+          ))}
+        </DealSection>
       )}
 
       {bestDeals.length > 0 && (
