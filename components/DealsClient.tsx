@@ -122,7 +122,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           {psGames.length > 0 && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <DealSection
-                logo={<Image src="/logos/playstation.png" alt="PlayStation" width={60} height={18} unoptimized style={{ width: 60, height: 18, objectFit: "contain" }} />}
+                logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} />}
                 badge="Free This Month"
                 badgeColor="dim"
                 style={{ marginBottom: 0 }}
