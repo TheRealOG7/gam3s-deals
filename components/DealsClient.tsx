@@ -80,8 +80,8 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       {totalSavings >= 1 && (
         <div className="savings-banner">
           <span style={{
-            fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-            letterSpacing: "0.08em", color: "var(--text-dim)", marginRight: 8,
+            fontSize: 13, fontWeight: 700, textTransform: "uppercase",
+            letterSpacing: "0.06em", color: "var(--text)", marginRight: 8,
           }}>
             Total Savings this Week:
           </span>
@@ -153,7 +153,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {igDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
+          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain" }} />}
           title="Deals"
           allDeals={deals?.ig_deals ?? []}
           resolvedUrls={urls}
@@ -167,7 +167,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {enebaDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/eneba.png" alt="Eneba" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
+          logo={<Image src="/logos/eneba.png" alt="Eneba" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain" }} />}
           title="Deals"
           allDeals={deals?.eneba_deals ?? []}
           resolvedUrls={urls}
