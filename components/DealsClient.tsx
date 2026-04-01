@@ -156,9 +156,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {gamePassGames.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/xbox.png" alt="Xbox" width={82} height={25} unoptimized style={{ width: 82, height: 25, objectFit: "contain" }} />}
-          badge="Included in Game Pass"
-          badgeColor="dim"
+          logo={<Image src="/logos/gamepass.png" alt="Game Pass" width={140} height={32} unoptimized style={{ width: 140, height: 32, objectFit: "contain" }} />}
           allPassGames={gamePassGames}
         >
           {gamePassGames.slice(0, 25).map((g) => (
