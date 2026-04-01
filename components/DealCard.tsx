@@ -49,7 +49,7 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
       <div
         style={{
           position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, transparent 35%, rgba(5,10,20,0.97) 100%)",
+          background: "linear-gradient(to bottom, transparent 25%, rgba(5,10,20,0.75) 55%, rgba(5,10,20,0.98) 100%)",
           zIndex: 1,
         }}
       />

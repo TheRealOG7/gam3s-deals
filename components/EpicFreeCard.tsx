@@ -23,40 +23,44 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
       className="epic-free-card"
       style={{
         display: "block",
+        position: "relative",
         flexShrink: 0,
         width: 160,
-        background: "var(--card)",
-        border: "1px solid var(--border)",
+        aspectRatio: "3/4",
         borderRadius: "var(--radius)",
         overflow: "hidden",
-        opacity: isCurrent ? 1 : 0.6,
+        border: "1px solid var(--border)",
+        background: "linear-gradient(160deg, #1e2d45, #0d1520)",
         cursor: "pointer",
+        opacity: isCurrent ? 1 : 0.6,
       }}
     >
-      <div style={{ position: "relative", aspectRatio: "16/9", background: "linear-gradient(160deg, #1e2d45, #0d1520)" }}>
-        {image && (
-          <Image src={image} alt={game.title} fill
-            sizes="(max-width: 640px) 50vw, 25vw"
-            style={{ objectFit: "cover" }} unoptimized />
-        )}
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, transparent 40%, rgba(5,10,20,0.9) 100%)",
-          zIndex: 1,
-        }} />
-        <div style={{
-          position: "absolute", top: 7, left: 7, zIndex: 2,
-          background: isCurrent ? "var(--green)" : "rgba(255,255,255,0.12)",
-          color: isCurrent ? "#000" : "var(--text-secondary)",
-          fontSize: 9, fontWeight: 800, padding: "2px 7px",
-          borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.05em",
-        }}>
-          {isCurrent ? "FREE NOW" : "NEXT WEEK"}
-        </div>
+      {image && (
+        <Image src={image} alt={game.title} fill
+          sizes="160px"
+          style={{ objectFit: "cover" }} unoptimized />
+      )}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to bottom, transparent 25%, rgba(5,10,20,0.75) 55%, rgba(5,10,20,0.98) 100%)",
+        zIndex: 1,
+      }} />
+      <div style={{
+        position: "absolute", top: 7, left: 7, zIndex: 2,
+        background: isCurrent ? "var(--green)" : "rgba(255,255,255,0.12)",
+        color: isCurrent ? "#000" : "var(--text-secondary)",
+        fontSize: 9, fontWeight: 800, padding: "2px 7px",
+        borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.05em",
+      }}>
+        {isCurrent ? "FREE NOW" : "NEXT WEEK"}
       </div>
-      <div style={{ padding: "8px 10px 10px" }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: "var(--text)", marginBottom: 4 }}>{game.title}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 9px", zIndex: 2 }}>
+        <div style={{
+          fontSize: 12, fontWeight: 600, color: "var(--text)",
+          display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+          overflow: "hidden", marginBottom: 3, lineHeight: 1.35,
+        }}>{game.title}</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: "var(--green)" }}>Free</span>
           {game.original_price && game.original_price !== "0" && (
             <span style={{ fontSize: 10, color: "var(--text-secondary)", textDecoration: "line-through" }}>
@@ -64,7 +68,7 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
             </span>
           )}
         </div>
-        <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 3 }}>
+        <div style={{ fontSize: 10, color: "var(--text-dim)", marginTop: 2 }}>
           {isCurrent ? `Until ${fmtDate(game.end_date)}` : `Starts ${fmtDate(game.start_date)}`}
         </div>
       </div>

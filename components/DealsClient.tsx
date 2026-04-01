@@ -140,16 +140,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {gamePassGames.length > 0 && (
         <DealSection
-          logo={
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <svg width="22" height="22" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="11" cy="11" r="11" fill="#107C10"/>
-                <line x1="6.5" y1="6.5" x2="15.5" y2="15.5" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-                <line x1="15.5" y1="6.5" x2="6.5" y2="15.5" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
-              <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text)", letterSpacing: "0.06em", textTransform: "uppercase" }}>Game Pass</span>
-            </div>
-          }
+          logo={<Image src="/logos/xbox.png" alt="Xbox" width={82} height={25} unoptimized style={{ width: 82, height: 25, objectFit: "contain" }} />}
           badge="Included"
           badgeColor="dim"
         >
