@@ -116,11 +116,14 @@ export async function fetchIgDealsLive(): Promise<Deal[]> {
     for (const page of [0, 1]) {
       const res = await fetch(
         `https://www.instant-gaming.com/en/search/?onsale=1&sort_by=discount&type_filter=1&json=1&page=${page}`,
-        { signal: AbortSignal.timeout(8000) }
+        {
+          headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+          signal: AbortSignal.timeout(8000),
+        }
       );
       if (!res.ok) break;
       const data = await res.json() as Record<string, unknown>;
-      const hits = (data.results ?? []) as Record<string, unknown>[];
+      const hits = (data.hits ?? []) as Record<string, unknown>[];
       allHits.push(...hits);
     }
 
@@ -137,7 +140,9 @@ export async function fetchIgDealsLive(): Promise<Deal[]> {
       const saleUsd = prices.USD;
       if (!saleUsd || saleUsd <= 0) continue;
 
-      const retailUsd = parseFloat(String(hit.default_retail ?? "").replace(/[^0-9.]/g, ""));
+      const retailUsd = typeof hit.default_retail === "number"
+        ? hit.default_retail
+        : parseFloat(String(hit.default_retail ?? "").replace(/[^0-9.]/g, ""));
       if (!retailUsd || retailUsd <= 0) continue;
 
       const savingsPct = Math.round((retailUsd - saleUsd) / retailUsd * 100);
