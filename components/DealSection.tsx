@@ -13,6 +13,7 @@ interface DealSectionProps {
   resolvedReviews?: Record<string, { text: string; count: number } | null>;
   headerExtra?: ReactNode;
   children: ReactNode;
+  style?: React.CSSProperties;
 }
 
 const badgeStyles: Record<string, React.CSSProperties> = {
@@ -109,7 +110,7 @@ function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { 
   );
 }
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, resolvedReviews, headerExtra, children }: DealSectionProps) {
+export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, resolvedUrls, resolvedReviews, headerExtra, children, style }: DealSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -175,7 +176,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
   const sectionLabel = title ?? "Deals";
 
   return (
-    <section style={{ marginBottom: 36 }}>
+    <section style={{ marginBottom: 36, ...style }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, paddingBottom: 10, borderBottom: "1px solid var(--border)", flexWrap: "wrap" }}>
         {logo}
         {title && (

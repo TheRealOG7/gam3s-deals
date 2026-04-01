@@ -65,4 +65,6 @@ main {
   }
   /* Deal cards slightly wider on mobile */
   .deal-card-link { width: 170px !important; }
+  /* Free games row: stack vertically on mobile */
+  .free-games-row { flex-direction: column; }
 }

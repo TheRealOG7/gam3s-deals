@@ -24,7 +24,7 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
       style={{
         display: "block",
         flexShrink: 0,
-        width: 240,
+        width: 160,
         background: "var(--card)",
         border: "1px solid var(--border)",
         borderRadius: "var(--radius)",

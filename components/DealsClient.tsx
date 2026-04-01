@@ -3,8 +3,9 @@
 import Image from "next/image";
 import { DealCard } from "@/components/DealCard";
 import { EpicFreeCard } from "@/components/EpicFreeCard";
+import { PsPlusCard } from "@/components/PsPlusCard";
 import { DealSection } from "@/components/DealSection";
-import type { Deal, DealsData, EgsData } from "@/lib/deals";
+import type { Deal, DealsData, EgsData, PsGame } from "@/lib/deals";
 
 function normalizeTitle(title: string): string {
   return title
@@ -47,9 +48,10 @@ interface DealsClientProps {
   reviews: Record<string, { text: string; count: number } | null>;
   totalSavings: number;
   dealCount: number;
+  psGames: PsGame[];
 }
 
-export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -96,21 +98,42 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
         </div>
       )}
 
-      {epicGames.length > 0 && (
-        <DealSection
-          logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}
-          badge="Free This Week"
-          badgeColor="dim"
-        >
-          {epicGames.map((g) => (
-            <EpicFreeCard
-              key={g.title}
-              game={g}
-              isCurrent={egs?.current_free?.some((c) => c.title === g.title) ?? false}
-              image={images[g.title] ?? null}
-            />
-          ))}
-        </DealSection>
+      {(epicGames.length > 0 || psGames.length > 0) && (
+        <div className="free-games-row" style={{ display: "flex", gap: 24, marginBottom: 36 }}>
+          {epicGames.length > 0 && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <DealSection
+                logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}
+                badge="Free This Week"
+                badgeColor="dim"
+                style={{ marginBottom: 0 }}
+              >
+                {epicGames.map((g) => (
+                  <EpicFreeCard
+                    key={g.title}
+                    game={g}
+                    isCurrent={egs?.current_free?.some((c) => c.title === g.title) ?? false}
+                    image={images[g.title] ?? null}
+                  />
+                ))}
+              </DealSection>
+            </div>
+          )}
+          {psGames.length > 0 && (
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <DealSection
+                logo={<Image src="/logos/playstation.png" alt="PlayStation" width={60} height={18} unoptimized style={{ objectFit: "contain" }} />}
+                badge="Free This Month"
+                badgeColor="dim"
+                style={{ marginBottom: 0 }}
+              >
+                {psGames.map((g) => (
+                  <PsPlusCard key={g.title} game={g} />
+                ))}
+              </DealSection>
+            </div>
+          )}
+        </div>
       )}
 
       {bestDeals.length > 0 && (
