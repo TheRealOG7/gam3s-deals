@@ -251,52 +251,29 @@ export async function fetchEnebaDealsLive(): Promise<Deal[]> {
   }
 }
 
+// PS Plus Essential monthly free games — UPDATE first Tuesday of each month
+// Source: https://blog.playstation.com (search "PlayStation Plus Monthly Games for <Month>")
+// April 2026 (Apr 7 – May 4)
+const PS_PLUS_MONTHLY: PsGame[] = [
+  {
+    title: "Lords of the Fallen",
+    original_price: "$59.99",
+    store_url: "https://store.playstation.com/en-us/search/Lords%20of%20the%20Fallen",
+  },
+  {
+    title: "Tomb Raider I-III Remastered",
+    original_price: "$29.99",
+    store_url: "https://store.playstation.com/en-us/search/Tomb%20Raider%20I-III%20Remastered",
+  },
+  {
+    title: "Sword Art Online Fractured Daydream",
+    original_price: "$59.99",
+    store_url: "https://store.playstation.com/en-us/search/Sword%20Art%20Online%20Fractured%20Daydream",
+  },
+];
+
 export async function fetchPsPlusFreeGames(): Promise<PsGame[]> {
-  const url =
-    "https://store.playstation.com/store/api/chihiro/00_09_000/container/US/en/999/STORE-MSF77008-PSPLUSFREEGAMES";
-  const cached = cache.get(url);
-  if (cached && Date.now() - cached.ts < TTL) return cached.data as PsGame[];
-
-  try {
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return [];
-    const data = await res.json() as Record<string, unknown>;
-    const links = (data.links as Record<string, unknown>[]) ?? [];
-
-    const games: PsGame[] = links
-      .map((link): PsGame | null => {
-        const title = String(link.name ?? "").trim();
-        if (!title) return null;
-
-        const apiUrl = String(link.url ?? "");
-        const m = apiUrl.match(/\/([A-Z]{2}\d{4}-[A-Z0-9_]+-[A-Z0-9]+)\/\d+/);
-        const storeUrl = m
-          ? `https://store.playstation.com/en-us/product/${m[1]}`
-          : "https://store.playstation.com/en-us/";
-
-        const images = (link.images as Record<string, unknown>[]) ?? [];
-        const cover = images.find(img => (img.type as number) === 12) ?? images[0];
-
-        const sku = link.default_sku as Record<string, unknown> | undefined;
-        const displayPrice = String(sku?.display_price ?? "").trim();
-
-        return {
-          title,
-          original_price: displayPrice || undefined,
-          store_url: storeUrl,
-          image_url: cover ? String(cover.url ?? "") : null,
-        };
-      })
-      .filter((g): g is PsGame => g !== null);
-
-    cache.set(url, { data: games, ts: Date.now() });
-    return games;
-  } catch {
-    return [];
-  }
+  return PS_PLUS_MONTHLY;
 }
 
 export function mergeDeals(a: Deal[], b: Deal[]): Deal[] {

@@ -3,7 +3,8 @@
 import Image from "next/image";
 import type { PsGame } from "@/lib/deals";
 
-export function PsPlusCard({ game }: { game: PsGame }) {
+export function PsPlusCard({ game, image }: { game: PsGame; image: string | null }) {
+  const src = image ?? game.image_url ?? null;
   return (
     <a
       href={game.store_url}
@@ -26,9 +27,9 @@ export function PsPlusCard({ game }: { game: PsGame }) {
         aspectRatio: "16/9",
         background: "linear-gradient(160deg, #1a1a3e, #0d1520)",
       }}>
-        {game.image_url && (
+        {src && (
           <Image
-            src={game.image_url}
+            src={src}
             alt={game.title}
             fill
             sizes="160px"

@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { DealsClient } from "@/components/DealsClient";
 import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
-import type { Deal, EpicGame } from "@/lib/deals";
+import type { Deal, EpicGame, PsGame } from "@/lib/deals";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "";
 
@@ -134,6 +134,7 @@ async function steamPortraitExists(url: string): Promise<boolean> {
 async function resolveImages(
   deals: Deal[],
   epicGames: EpicGame[],
+  psGames: PsGame[],
 ): Promise<Record<string, string | null>> {
   const keys: string[] = [];
   const fns: Array<() => Promise<string | null>> = [];
@@ -157,6 +158,10 @@ async function resolveImages(
     }
   }
   for (const g of epicGames) {
+    keys.push(g.title);
+    fns.push(() => lookupRawgImage(g.title));
+  }
+  for (const g of psGames) {
     keys.push(g.title);
     fns.push(() => lookupRawgImage(g.title));
   }
@@ -234,7 +239,7 @@ export default async function DealsPage() {
   const uniqueDeals = [...bestByTitle.values()];
 
   const [images, urls, reviews] = await Promise.all([
-    resolveImages(uniqueDeals, epicGames),
+    resolveImages(uniqueDeals, epicGames, psGames),
     resolveUrls(uniqueDeals),
     resolveReviews(uniqueDeals),
   ]);

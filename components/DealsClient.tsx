@@ -128,7 +128,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
                 style={{ marginBottom: 0 }}
               >
                 {psGames.map((g) => (
-                  <PsPlusCard key={g.title} game={g} />
+                  <PsPlusCard key={g.title} game={g} image={images[g.title] ?? null} />
                 ))}
               </DealSection>
             </div>
