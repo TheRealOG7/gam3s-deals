@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { DealsClient } from "@/components/DealsClient";
-import { fetchDeals, fetchEgsGames } from "@/lib/deals";
+import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
 import type { Deal, EpicGame } from "@/lib/deals";
 
@@ -190,10 +190,18 @@ async function resolveUrls(deals: Deal[]): Promise<Record<string, string>> {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DealsPage() {
-  const [deals, egs] = await Promise.all([
-    fetchDeals(DASHBOARD_URL),
-    fetchEgsGames(DASHBOARD_URL),
+  const [[rawDeals, egs], liveIg, liveEneba] = await Promise.all([
+    Promise.all([fetchDeals(DASHBOARD_URL), fetchEgsGames(DASHBOARD_URL)]),
+    fetchIgDealsLive(),
+    fetchEnebaDealsLive(),
   ]);
+
+  // Inject live IG/Eneba data when the backend hasn't been updated yet
+  const deals = rawDeals ? {
+    ...rawDeals,
+    ig_deals: (rawDeals.ig_deals?.length ?? 0) > 0 ? rawDeals.ig_deals : liveIg,
+    eneba_deals: (rawDeals.eneba_deals?.length ?? 0) > 0 ? rawDeals.eneba_deals : liveEneba,
+  } : null;
 
   // Only include sections that are actually displayed — top_rated is not shown
   const allDeals = [

@@ -88,6 +88,157 @@ export async function fetchEgsGames(dashboardUrl: string, apiKey?: string): Prom
   return cachedFetch<EgsData>(`${base}/public/egs_free_games.json`, {});
 }
 
+// ── Direct live fetches (bypass Python backend for IG + Eneba) ───────────────
+
+const JUNK_KW = [
+  "soundtrack", "ost", "artbook", "wallpaper", "costume pack", "gift card",
+  "dlc", "season pass", "content pack", "expansion pass", "skin pack",
+  "voice pack", "emote pack", "top-up", "topup", "credits", "coins",
+  "points", "subscription", "membership",
+];
+
+function dedup(deals: Deal[], limit = 15): Deal[] {
+  const seen = new Set<string>();
+  return deals
+    .sort((a, b) => b.savings_pct - a.savings_pct)
+    .filter(d => {
+      const k = d.title.toLowerCase();
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .slice(0, limit);
+}
+
+export async function fetchIgDealsLive(): Promise<Deal[]> {
+  try {
+    const allHits: Record<string, unknown>[] = [];
+    for (const page of [0, 1]) {
+      const res = await fetch(
+        `https://www.instant-gaming.com/en/search/?onsale=1&sort_by=discount&type_filter=1&json=1&page=${page}`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (!res.ok) break;
+      const data = await res.json() as Record<string, unknown>;
+      const hits = (data.results ?? []) as Record<string, unknown>[];
+      allHits.push(...hits);
+    }
+
+    const deals: Deal[] = [];
+    for (const hit of allHits) {
+      if (hit.is_dlc || hit.preorder) continue;
+      const platform = String(hit.platform ?? "").toLowerCase();
+      if (!platform.includes("steam") && platform !== "pc") continue;
+      const title = String(hit.name ?? "").trim();
+      if (!title) continue;
+      if (JUNK_KW.some(k => title.toLowerCase().includes(k))) continue;
+
+      const prices = (hit.currency_prices ?? {}) as Record<string, number>;
+      const saleUsd = prices.USD;
+      if (!saleUsd || saleUsd <= 0) continue;
+
+      const retailUsd = parseFloat(String(hit.default_retail ?? "").replace(/[^0-9.]/g, ""));
+      if (!retailUsd || retailUsd <= 0) continue;
+
+      const savingsPct = Math.round((retailUsd - saleUsd) / retailUsd * 100);
+      if (savingsPct < 20) continue;
+
+      const reviewsAvg = typeof hit.reviews_avg === "number" && hit.reviews_avg >= 0
+        ? Math.round(hit.reviews_avg) : undefined;
+
+      deals.push({
+        title,
+        sale_price: saleUsd.toFixed(2),
+        normal_price: retailUsd.toFixed(2),
+        savings_pct: savingsPct,
+        store_name: "Instant Gaming",
+        deal_url: `https://www.instant-gaming.com/en/${hit.prod_id}-${hit.seo_name}/`,
+        ...(reviewsAvg !== undefined ? { steam_rating: reviewsAvg } : {}),
+      });
+    }
+    return dedup(deals);
+  } catch {
+    return [];
+  }
+}
+
+const ENEBA_GQL = "https://graphql.eneba.com/graphql/";
+const ENEBA_HASH = "7b19719a11c4f40def184daea9bbe6906b439e20aa7d177fc53a57ef9a0e2531_2df7f0e24e026cd0da0fdf51ff08fd81411fc3b2d69c89c892c1cbb0cb7fa86e3301c3b4418078030622a8ab07294c8e6de856e9ea939752c56526498ad02607";
+
+export async function fetchEnebaDealsLive(): Promise<Deal[]> {
+  try {
+    const res = await fetch(ENEBA_GQL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0",
+        "x-version": "1.3553.0",
+        "origin": "https://www.eneba.com",
+        "referer": "https://www.eneba.com/",
+      },
+      body: JSON.stringify({
+        operationName: "Store",
+        variables: {
+          first: 100,
+          currency: "USD",
+          url: "/store/all",
+          redirectUrl: "/store/all",
+          context: { country: "US", language: "en", region: "north_america" },
+          os: ["WINDOWS"],
+          types: ["game"],
+          drms: ["steam"],
+          sortBy: "PRICE_ASC",
+          searchType: "DEFAULT",
+        },
+        extensions: { persistedQuery: { sha256Hash: ENEBA_HASH, version: 1 } },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!res.ok) return [];
+    const result = await res.json() as Record<string, unknown>;
+    const data = result.data as Record<string, unknown> | undefined;
+    const search = data?.search as Record<string, unknown> | undefined;
+    const results = search?.results as Record<string, unknown> | undefined;
+    const edges = (results?.edges as unknown[]) ?? [];
+
+    const deals: Deal[] = [];
+    for (const e of edges) {
+      const node = (e as Record<string, unknown>).node as Record<string, unknown> | undefined;
+      if (!node) continue;
+      const title = String(node.name ?? "").trim();
+      if (!title) continue;
+      if (JUNK_KW.some(k => title.toLowerCase().includes(k))) continue;
+
+      const auction = node.cheapestAuction as Record<string, unknown> | undefined;
+      if (!auction) continue;
+      const priceObj = auction.price as Record<string, number> | undefined;
+      const msrpObj = auction.msrp as Record<string, number> | undefined;
+      const discountPct = auction.msrpDiscountPercent as number | undefined;
+
+      if (!priceObj || (priceObj.amount ?? 0) <= 0) continue;
+      if (!msrpObj || (msrpObj.amount ?? 0) <= 0) continue;
+      if (typeof discountPct !== "number" || discountPct < 20 || discountPct > 100) continue;
+
+      const slug = String(node.slug ?? "");
+      if (!slug) continue;
+
+      deals.push({
+        title,
+        sale_price: (priceObj.amount / 100).toFixed(2),
+        normal_price: (msrpObj.amount / 100).toFixed(2),
+        savings_pct: Math.round(discountPct),
+        store_name: "Eneba",
+        deal_url: `https://www.eneba.com/${slug}`,
+      });
+    }
+    return dedup(deals);
+  } catch {
+    return [];
+  }
+}
+
 export function mergeDeals(a: Deal[], b: Deal[]): Deal[] {
   const seen = new Set<string>();
   return [...a, ...b]
