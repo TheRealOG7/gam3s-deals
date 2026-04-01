@@ -283,7 +283,19 @@ export async function fetchPsPlusFreeGames(): Promise<PsGame[]> {
   return PS_PLUS_MONTHLY;
 }
 
-export async function fetchGamePassGames(limit = 15): Promise<GamePassGame[]> {
+// Seeded shuffle — same order within each TTL window, rotates on cache expiry
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  let s = seed;
+  const rng = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0x100000000; };
+  const result = [...arr];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> {
   const catalogUrl = "https://catalog.gamepass.com/sigls/v2?id=fdd9e2a7-0fee-49f6-ad69-4354098401ff&language=en-us&market=US";
   const cached = cache.get(catalogUrl);
   if (cached && Date.now() - cached.ts < TTL) return cached.data as GamePassGame[];
@@ -296,15 +308,18 @@ export async function fetchGamePassGames(limit = 15): Promise<GamePassGame[]> {
     if (!catalogRes.ok) return [];
 
     const catalog = await catalogRes.json() as Array<Record<string, unknown>>;
-    const ids = catalog
+    const allIds = catalog
       .filter(item => typeof item.id === "string")
-      .map(item => item.id as string)
-      .slice(0, limit);
+      .map(item => item.id as string);
 
-    if (ids.length === 0) return [];
+    if (allIds.length === 0) return [];
+
+    // Shuffle using a seed tied to the current TTL window — rotates every 5 min
+    const seed = Math.floor(Date.now() / TTL);
+    const sampledIds = seededShuffle(allIds, seed).slice(0, display + 10);
 
     const detailsRes = await fetch(
-      `https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${ids.join(",")}&market=US&languages=en-us`,
+      `https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=${sampledIds.join(",")}&market=US&languages=en-us`,
       {
         headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
         signal: AbortSignal.timeout(10000),
@@ -338,17 +353,21 @@ export async function fetchGamePassGames(limit = 15): Promise<GamePassGame[]> {
         const skus = (product.DisplaySkuAvailabilities as Record<string, unknown>[]) ?? [];
         const availabilities = (skus[0]?.Availabilities as Record<string, unknown>[]) ?? [];
         const priceObj = (availabilities[0]?.OrderManagementData as Record<string, unknown>)?.Price as Record<string, number> | undefined;
-        const listPrice = priceObj?.ListPrice;
-        const priceStr = listPrice && listPrice > 0 ? `$${listPrice.toFixed(2)}` : undefined;
+        const listPrice = priceObj?.ListPrice ?? 0;
+        const priceStr = listPrice > 0 ? `$${listPrice.toFixed(2)}` : undefined;
 
         const productId = String(product.ProductId ?? "");
         const storeUrl = productId
           ? `https://www.microsoft.com/store/apps/${productId}`
           : "https://www.xbox.com/en-US/games/game-pass";
 
-        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl };
+        return { title, original_price: priceStr, store_url: storeUrl, image_url: imageUrl, _listPrice: listPrice } as GamePassGame & { _listPrice: number };
       })
-      .filter((g): g is GamePassGame => g !== null);
+      .filter((g): g is GamePassGame & { _listPrice: number } => g !== null)
+      // Sort by original retail price desc — proxy for game quality/size
+      .sort((a, b) => (b._listPrice ?? 0) - (a._listPrice ?? 0))
+      .map(({ _listPrice: _lp, ...g }) => g)
+      .slice(0, display);
 
     cache.set(catalogUrl, { data: games, ts: Date.now() });
     return games;
