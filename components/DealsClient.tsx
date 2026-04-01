@@ -79,13 +79,19 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
     <>
       {totalSavings >= 1 && (
         <div className="savings-banner">
+          <span style={{
+            fontSize: 10, fontWeight: 700, textTransform: "uppercase",
+            letterSpacing: "0.08em", color: "var(--text-dim)", marginRight: 8,
+          }}>
+            Total Savings this Week:
+          </span>
           <span className="savings-badge" style={{
-            display: "inline-block", fontSize: 10, fontWeight: 800,
+            display: "inline-block", fontSize: 13, fontWeight: 800,
             textTransform: "uppercase", letterSpacing: "0.06em",
-            padding: "5px 14px", borderRadius: 5,
+            padding: "5px 16px", borderRadius: 5,
             background: "var(--green)", color: "#000",
           }}>
-            {`Total Savings this Week: $${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`}
+            {`$${Math.round(totalSavings).toLocaleString()} across ${dealCount} games`}
           </span>
         </div>
       )}
