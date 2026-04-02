@@ -76,6 +76,13 @@ function GamePassModal({ title, games, onClose }: { title: ReactNode; games: Gam
               onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
             >
               <span style={{ fontSize: 11, color: "var(--text-dim)", width: 20, flexShrink: 0 }}>{i + 1}</span>
+              {game.image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={game.image_url} alt="" width={32} height={43}
+                  style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: 32, height: 43, borderRadius: 4, background: "var(--border)", flexShrink: 0 }} />
+              )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {game.title}

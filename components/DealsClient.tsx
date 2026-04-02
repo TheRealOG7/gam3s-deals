@@ -62,10 +62,16 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
   const bestMap = buildBestDeals(allSections);
 
-  // Sort combined pool by savings_pct first so the highest-discount version wins deduplication
+  // Best Deals: sort by total dollar savings (discount% × normal price) — rewards expensive games on deep sale
+  const sortByDollarSavings = (arr: Deal[]) => [...arr].sort((a, b) => {
+    const aSaved = (a.savings_pct / 100) * parseFloat(a.normal_price || "0");
+    const bSaved = (b.savings_pct / 100) * parseFloat(b.normal_price || "0");
+    return bSaved - aSaved;
+  });
+  // Biggest Discounts: sort by pure % off
   const sortBySavings = (arr: Deal[]) => [...arr].sort((a, b) => b.savings_pct - a.savings_pct);
 
-  const bestDealsPool = sortBySavings([
+  const bestDealsPool = sortByDollarSavings([
     ...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? []),
     ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
   ]);
@@ -73,7 +79,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
     ...(deals?.biggest_discounts ?? []),
     ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
   ]);
-  const aaaPool = sortBySavings([
+  const aaaPool = sortByDollarSavings([
     ...(deals?.aaa_deals ?? []),
     ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
   ]);
@@ -141,7 +147,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
             <div style={{ flex: 1, minWidth: 0 }}>
               <DealSection
                 logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} />}
-                badge="Free This Month"
+                badge="Free with PS Plus"
                 badgeColor="dim"
                 style={{ marginBottom: 0 }}
               >
