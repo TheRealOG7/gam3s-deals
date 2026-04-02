@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { IframeHeightReporter } from "@/components/IframeHeightReporter";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -26,7 +27,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body>{children}</body>
+      <body>
+        <IframeHeightReporter />
+        {children}
+      </body>
     </html>
   );
 }
