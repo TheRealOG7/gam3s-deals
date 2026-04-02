@@ -185,7 +185,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {gamePassGames.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/gamepass.png" alt="Game Pass" width={140} height={28} unoptimized style={{ height: 28, width: "auto", display: "block" }} />}
+          logo={<Image src="/logos/gamepass.png" alt="Game Pass" width={140} height={34} unoptimized style={{ height: 34, width: "auto", display: "block" }} />}
           allPassGames={gamePassGames}
         >
           {gamePassGames.slice(0, 25).map((g) => (
@@ -234,7 +234,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {igDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain" }} />}
+          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.85 }} />}
           title="Deals"
           allDeals={deals?.ig_deals ?? []}
           resolvedUrls={urls}
@@ -248,7 +248,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {enebaDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/eneba.png" alt="Eneba" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain" }} />}
+          logo={<Image src="/logos/eneba.png" alt="Eneba" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.85 }} />}
           title="Deals"
           allDeals={deals?.eneba_deals ?? []}
           resolvedUrls={urls}
