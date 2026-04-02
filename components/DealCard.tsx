@@ -15,7 +15,7 @@ const STORE_LOGOS: Record<string, string> = {
   "Eneba": "/logos/eneba.png",
   "PlayStation": "/logos/playstation.png",
   "Steam": "/logos/steam.svg",
-  "GOG": "/logos/gog.svg",
+  "GOG": "/logos/gog.png",
   "GreenManGaming": "/logos/greenmangaming.png",
   "Fanatical": "/logos/fanatical.png",
   "Humble Store": "/logos/humble.png",
