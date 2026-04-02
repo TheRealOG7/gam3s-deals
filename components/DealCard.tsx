@@ -23,6 +23,11 @@ const STORE_LOGOS: Record<string, string> = {
   "Epic Games Store": "/logos/epic.png",
 };
 
+// Override logo dimensions for stores with non-square logos (default is 16×16)
+const STORE_LOGO_SIZES: Record<string, { width: number; height: number }> = {
+  "Epic Games Store": { width: 46, height: 20 },
+};
+
 function expiresSoon(expiry?: string | null): boolean {
   if (!expiry) return false;
   const ms = new Date(expiry).getTime() - Date.now();
@@ -82,10 +87,13 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
       )}
       {/* Top-left: store logo + expires soon stacked */}
       <div style={{ position: "absolute", top: 7, left: 7, zIndex: 2, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
-        {storeLogo && (
-          <Image src={storeLogo} alt={deal.store_name ?? ""} width={16} height={16} unoptimized
-            style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }} />
-        )}
+        {storeLogo && (() => {
+          const sz = STORE_LOGO_SIZES[deal.store_name ?? ""] ?? { width: 16, height: 16 };
+          return (
+            <Image src={storeLogo} alt={deal.store_name ?? ""} width={sz.width} height={sz.height} unoptimized
+              style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }} />
+          );
+        })()}
         {showExpiry && (
           <div style={{
             background: "var(--orange)", color: "#000",

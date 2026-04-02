@@ -52,7 +52,7 @@ export function EpicFreeCard({ game, isCurrent, image }: EpicFreeCardProps) {
       }} />
       {/* Epic logo top-left */}
       <div style={{ position: "absolute", top: 7, left: 7, zIndex: 2, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
-        <Image src="/logos/epic.png" alt="Epic Games" width={16} height={16} unoptimized
+        <Image src="/logos/epic.png" alt="Epic Games" width={46} height={20} unoptimized
           style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }} />
         <div style={{
           background: isCurrent ? "var(--green)" : "rgba(255,255,255,0.12)",
