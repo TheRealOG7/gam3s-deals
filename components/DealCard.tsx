@@ -16,6 +16,10 @@ const STORE_LOGOS: Record<string, string> = {
   "PlayStation": "/logos/playstation.png",
   "Steam": "/logos/steam.svg",
   "GOG": "/logos/gog.svg",
+  "GreenManGaming": "/logos/greenmangaming.png",
+  "Fanatical": "/logos/fanatical.png",
+  "Humble Store": "/logos/humble.png",
+  "Gamesplanet": "/logos/gamesplanet.png",
 };
 
 function expiresSoon(expiry?: string | null): boolean {
@@ -62,31 +66,42 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           unoptimized
         />
       )}
-      <div
-        style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, transparent 25%, rgba(5,10,20,0.75) 55%, rgba(5,10,20,0.98) 100%)",
-          zIndex: 1,
-        }}
-      />
-      {showExpiry && (
+      {/* Bottom vignette */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to bottom, transparent 25%, rgba(5,10,20,0.75) 55%, rgba(5,10,20,0.98) 100%)",
+        zIndex: 1,
+      }} />
+      {/* Top-left corner shadow so store logo is legible over any image */}
+      {storeLogo && (
         <div style={{
-          position: "absolute", top: 7, left: 7, zIndex: 2,
-          background: "var(--orange)", color: "#000",
-          fontSize: 9, fontWeight: 800, padding: "2px 6px",
-          borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.04em",
-        }}>
-          Expires Soon
-        </div>
+          position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none",
+          background: "radial-gradient(ellipse 60% 40% at 0% 0%, rgba(0,0,0,0.55) 0%, transparent 100%)",
+        }} />
       )}
-      <div
-        style={{
-          position: "absolute", top: 7, right: 7,
-          background: "var(--green)", color: "#000",
-          fontSize: 10, fontWeight: 800, padding: "2px 7px",
-          borderRadius: 5, zIndex: 2,
-        }}
-      >
+      {/* Top-left: store logo + expires soon stacked */}
+      <div style={{ position: "absolute", top: 7, left: 7, zIndex: 2, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-start" }}>
+        {storeLogo && (
+          <Image src={storeLogo} alt={deal.store_name ?? ""} width={16} height={16} unoptimized
+            style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }} />
+        )}
+        {showExpiry && (
+          <div style={{
+            background: "var(--orange)", color: "#000",
+            fontSize: 9, fontWeight: 800, padding: "2px 6px",
+            borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.04em",
+          }}>
+            Expires Soon
+          </div>
+        )}
+      </div>
+      {/* Top-right: discount badge */}
+      <div style={{
+        position: "absolute", top: 7, right: 7,
+        background: "var(--green)", color: "#000",
+        fontSize: 10, fontWeight: 800, padding: "2px 7px",
+        borderRadius: 5, zIndex: 2,
+      }}>
         −{deal.savings_pct}%
       </div>
       <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 9px", zIndex: 2 }}>
@@ -108,17 +123,6 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
         {reviewText && (
           <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 3, opacity: 0.8 }}>
             {reviewText}
-          </div>
-        )}
-        {deal.store_name && (
-          <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
-            {storeLogo ? (
-              <Image src={storeLogo} alt="" width={12} height={12} unoptimized
-                style={{ filter: "brightness(0) invert(1)", opacity: 0.7, flexShrink: 0 }} />
-            ) : null}
-            <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-              {deal.store_name}
-            </span>
           </div>
         )}
       </div>
