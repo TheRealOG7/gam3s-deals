@@ -20,6 +20,7 @@ const STORE_LOGOS: Record<string, string> = {
   "Fanatical": "/logos/fanatical.png",
   "Humble Store": "/logos/humble.png",
   "Gamesplanet": "/logos/gamesplanet.png",
+  "Epic Games Store": "/logos/epic.png",
 };
 
 function expiresSoon(expiry?: string | null): boolean {
