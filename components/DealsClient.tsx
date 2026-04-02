@@ -62,20 +62,43 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
   const bestMap = buildBestDeals(allSections);
 
-  // Best Deals: sort by total dollar savings (discount% × normal price) — rewards expensive games on deep sale
+  // Review text → quality score (0–100)
+  const REVIEW_SCORES: Record<string, number> = {
+    "Overwhelmingly Positive": 95, "Very Positive": 85, "Mostly Positive": 70,
+    "Positive": 65, "Mixed": 50, "Mostly Negative": 30, "Negative": 20,
+    "Very Negative": 10, "Overwhelmingly Negative": 5,
+  };
+  const qualityScore = (deal: Deal): number => {
+    const rev = reviews[deal.title];
+    if (rev?.text && REVIEW_SCORES[rev.text] !== undefined) return REVIEW_SCORES[rev.text];
+    if (deal.steam_rating != null) return deal.steam_rating;
+    return 55; // neutral when no data
+  };
+
+  // Best Deals: quality × discount hybrid — highly rated games with a meaningful sale
+  const sortByQualityDiscount = (arr: Deal[]) => [...arr].sort((a, b) => {
+    const scoreA = qualityScore(a) * 0.55 + a.savings_pct * 0.45;
+    const scoreB = qualityScore(b) * 0.55 + b.savings_pct * 0.45;
+    return scoreB - scoreA;
+  });
+  // Biggest Discounts: highest absolute dollar saved (not %) — filters out $2 game at 100% off
+  const sortByDollarSaved = (arr: Deal[]) => [...arr].sort((a, b) => {
+    const aSaved = parseFloat(a.normal_price || "0") - parseFloat(a.sale_price || "0");
+    const bSaved = parseFloat(b.normal_price || "0") - parseFloat(b.sale_price || "0");
+    return bSaved - aSaved;
+  });
+  // AAA: dollar savings
   const sortByDollarSavings = (arr: Deal[]) => [...arr].sort((a, b) => {
     const aSaved = (a.savings_pct / 100) * parseFloat(a.normal_price || "0");
     const bSaved = (b.savings_pct / 100) * parseFloat(b.normal_price || "0");
     return bSaved - aSaved;
   });
-  // Biggest Discounts: sort by pure % off
-  const sortBySavings = (arr: Deal[]) => [...arr].sort((a, b) => b.savings_pct - a.savings_pct);
 
-  const bestDealsPool = sortByDollarSavings([
+  const bestDealsPool = sortByQualityDiscount([
     ...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? []),
     ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
   ]);
-  const biggestDiscountsPool = sortBySavings([
+  const biggestDiscountsPool = sortByDollarSaved([
     ...(deals?.biggest_discounts ?? []),
     ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
   ]);

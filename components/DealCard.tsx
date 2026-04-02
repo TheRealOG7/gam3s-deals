@@ -14,6 +14,8 @@ const STORE_LOGOS: Record<string, string> = {
   "Instant Gaming": "/logos/instant-gaming.png",
   "Eneba": "/logos/eneba.png",
   "PlayStation": "/logos/playstation.png",
+  "Steam": "/logos/steam.svg",
+  "GOG": "/logos/gog.svg",
 };
 
 function expiresSoon(expiry?: string | null): boolean {
@@ -109,12 +111,12 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           </div>
         )}
         {deal.store_name && (
-          <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 3 }}>
-            {storeLogo && (
-              <Image src={storeLogo} alt="" width={10} height={10} unoptimized
-                style={{ filter: "brightness(0) invert(1)", opacity: 0.45, flexShrink: 0 }} />
-            )}
-            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          <div style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 4 }}>
+            {storeLogo ? (
+              <Image src={storeLogo} alt="" width={12} height={12} unoptimized
+                style={{ filter: "brightness(0) invert(1)", opacity: 0.7, flexShrink: 0 }} />
+            ) : null}
+            <span style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               {deal.store_name}
             </span>
           </div>
