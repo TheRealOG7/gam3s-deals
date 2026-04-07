@@ -150,7 +150,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           {epicGames.length > 0 && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <DealSection
-                logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} />}
+                logo={<Image src="/logos/epic.png" alt="Epic Games" width={64} height={18} unoptimized style={{ objectFit: "contain" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
                 badge="Free This Week"
                 badgeColor="dim"
                 style={{ marginBottom: 0 }}
@@ -169,7 +169,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           {psGames.length > 0 && (
             <div style={{ flex: 1, minWidth: 0 }}>
               <DealSection
-                logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} />}
+                logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
                 badge="Free with PS Plus"
                 badgeColor="dim"
                 style={{ marginBottom: 0 }}
@@ -185,7 +185,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {gamePassGames.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/gamepass.png" alt="Game Pass" width={140} height={34} unoptimized style={{ height: 34, width: "auto", display: "block" }} />}
+          logo={<Image src="/logos/gamepass.png" alt="Game Pass" width={140} height={34} unoptimized style={{ height: 34, width: "auto", display: "block" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
           allPassGames={gamePassGames}
         >
           {gamePassGames.slice(0, 25).map((g) => (
@@ -212,7 +212,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {psDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} />}
+          logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
           title="Deals"
           allDeals={deals?.ps_deals ?? []}
           resolvedUrls={urls}
@@ -234,7 +234,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {igDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.85 }} />}
+          logo={<Image src="/logos/instant-gaming.png" alt="Instant Gaming" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.85 }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
           title="Deals"
           allDeals={deals?.ig_deals ?? []}
           resolvedUrls={urls}
@@ -248,7 +248,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {enebaDeals.length > 0 && (
         <DealSection
-          logo={<Image src="/logos/eneba.png" alt="Eneba" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.85 }} />}
+          logo={<Image src="/logos/eneba.png" alt="Eneba" width={16} height={16} unoptimized style={{ width: 16, height: 16, objectFit: "contain", filter: "brightness(0) invert(1)", opacity: 0.85 }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
           title="Deals"
           allDeals={deals?.eneba_deals ?? []}
           resolvedUrls={urls}

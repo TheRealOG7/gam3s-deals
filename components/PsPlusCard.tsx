@@ -26,7 +26,8 @@ export function PsPlusCard({ game, image }: { game: PsGame; image: string | null
     >
       {src && (
         <Image src={src} alt={game.title} fill sizes="160px"
-          style={{ objectFit: "cover" }} unoptimized />
+          style={{ objectFit: "cover" }} unoptimized
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
       )}
       <div style={{
         position: "absolute", inset: 0,

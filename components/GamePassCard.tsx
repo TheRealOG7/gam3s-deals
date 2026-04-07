@@ -25,7 +25,8 @@ export function GamePassCard({ game }: { game: GamePassGame }) {
     >
       {game.image_url && (
         <Image src={game.image_url} alt={game.title} fill sizes="160px"
-          style={{ objectFit: "cover" }} unoptimized />
+          style={{ objectFit: "cover" }} unoptimized
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
       )}
       <div style={{
         position: "absolute", inset: 0,

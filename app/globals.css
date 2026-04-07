@@ -7,7 +7,7 @@
   --text: oklch(98% 0 0);
   --text-secondary: oklch(65% 0.01 240);
   --text-dim: oklch(50% 0.01 240);
-  --green: oklch(83% 0.22 158);
+  --green: #33f57a;
   --orange: oklch(72% 0.19 55);
   --radius: 10px;
 }
@@ -19,6 +19,8 @@ body {
   color: var(--text);
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
   min-height: 100vh;
 }
 

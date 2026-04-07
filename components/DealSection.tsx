@@ -79,7 +79,8 @@ function GamePassModal({ title, games, onClose }: { title: ReactNode; games: Gam
               {game.image_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={game.image_url} alt="" width={32} height={43}
-                  style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0 }} />
+                  style={{ borderRadius: 4, objectFit: "cover", flexShrink: 0 }}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
               ) : (
                 <div style={{ width: 32, height: 43, borderRadius: 4, background: "var(--border)", flexShrink: 0 }} />
               )}

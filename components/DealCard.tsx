@@ -70,6 +70,7 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
           style={{ objectFit: "cover" }}
           unoptimized
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
       )}
       {/* Bottom vignette */}
@@ -91,7 +92,8 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           const sz = STORE_LOGO_SIZES[deal.store_name ?? ""] ?? { width: 16, height: 16 };
           return (
             <Image src={storeLogo} alt={deal.store_name ?? ""} width={sz.width} height={sz.height} unoptimized
-              style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }} />
+              style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           );
         })()}
         {showExpiry && (
