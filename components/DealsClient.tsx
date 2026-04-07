@@ -117,7 +117,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   const biggestDiscounts = deals ? filterBest(biggestDiscountsPool, bestMap) : [];
   const igDeals = deals ? filterBest(deals.ig_deals ?? [], bestMap) : [];
   const enebaDeals = deals ? filterBest(deals.eneba_deals ?? [], bestMap) : [];
-  const switchDealsFiltered = switchDeals.filter(d => images[d.title]);
+  const switchDealsFiltered = sortByDollarSavings(switchDeals).filter(d => images[d.title]);
 
   const epicGames = egs ? [...(egs.current_free ?? []), ...(egs.upcoming_free ?? [])] : [];
 
