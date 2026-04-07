@@ -21,12 +21,17 @@ const STORE_LOGOS: Record<string, string> = {
   "Humble Store": "/logos/humble.png",
   "Gamesplanet": "/logos/gamesplanet.png",
   "Epic Games Store": "/logos/epic.png",
+  "Nintendo eShop": "/logos/switch.png",
 };
 
 // Override logo dimensions for stores with non-square logos (default is 16×16)
 const STORE_LOGO_SIZES: Record<string, { width: number; height: number }> = {
   "Epic Games Store": { width: 46, height: 20 },
+  "Nintendo eShop": { width: 28, height: 28 },
 };
+
+// Logos already white on transparent — skip brightness(0) invert(1)
+const STORE_LOGO_NO_FILTER = new Set(["Nintendo eShop"]);
 
 function expiresSoon(expiry?: string | null): boolean {
   if (!expiry) return false;
@@ -92,7 +97,7 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           const sz = STORE_LOGO_SIZES[deal.store_name ?? ""] ?? { width: 16, height: 16 };
           return (
             <Image src={storeLogo} alt={deal.store_name ?? ""} width={sz.width} height={sz.height} unoptimized
-              style={{ filter: "brightness(0) invert(1)", opacity: 0.85 }}
+              style={{ filter: STORE_LOGO_NO_FILTER.has(deal.store_name ?? "") ? undefined : "brightness(0) invert(1)", opacity: 0.85 }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
           );
         })()}
@@ -125,10 +130,10 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text)" }}>
-            ${deal.sale_price}
+            {deal.currency_symbol ?? "$"}{deal.sale_price}
           </span>
           <span style={{ fontSize: 11, color: "var(--text-secondary)", textDecoration: "line-through" }}>
-            ${deal.normal_price}
+            {deal.currency_symbol ?? "$"}{deal.normal_price}
           </span>
         </div>
         {reviewText && (

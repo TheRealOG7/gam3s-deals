@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { DealsClient } from "@/components/DealsClient";
-import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames } from "@/lib/deals";
+import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames, fetchSwitchDealsLive } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
 import type { Deal, EpicGame, PsGame } from "@/lib/deals";
 
@@ -150,8 +150,12 @@ async function resolveImages(
         return ok ? portrait : capsule;
       });
     } else {
-      // No steam_url: try RAWG (validated), then deal thumbnail (validated), else null
+          // No steam_url: for Nintendo eShop use thumb directly; for others try RAWG first
       fns.push(async () => {
+        if (deal.store_name === "Nintendo eShop") {
+          if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
+          return null;
+        }
         const rawg = await lookupRawgImage(deal.title);
         if (rawg && await imageExists(rawg)) return rawg;
         if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
@@ -210,12 +214,13 @@ async function resolveUrls(deals: Deal[]): Promise<Record<string, string>> {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DealsPage() {
-  const [[rawDeals, egs], liveIg, liveEneba, psGames, gamePassGames] = await Promise.all([
+  const [[rawDeals, egs], liveIg, liveEneba, psGames, gamePassGames, switchDeals] = await Promise.all([
     Promise.all([fetchDeals(DASHBOARD_URL), fetchEgsGames(DASHBOARD_URL)]),
     fetchIgDealsLive(),
     fetchEnebaDealsLive(),
     fetchPsPlusFreeGames(),
     fetchGamePassGames(100),
+    fetchSwitchDealsLive(),
   ]);
 
   // Inject live IG/Eneba data when the backend hasn't been updated yet
@@ -234,6 +239,7 @@ export default async function DealsPage() {
     ...(deals?.ps_deals ?? []),
     ...(deals?.ig_deals ?? []),
     ...(deals?.eneba_deals ?? []),
+    ...switchDeals,
   ];
   const epicGames = [
     ...(egs?.current_free ?? []),
@@ -268,7 +274,7 @@ export default async function DealsPage() {
 
   return (
     <main style={{ padding: "12px 16px 40px" }}>
-      <DealsClient deals={deals} egs={egs} images={images} urls={urls} reviews={reviews} totalSavings={totalSavings} dealCount={uniqueDeals.length} psGames={psGames} gamePassGames={gamePassGames} />
+      <DealsClient deals={deals} egs={egs} images={images} urls={urls} reviews={reviews} totalSavings={totalSavings} dealCount={uniqueDeals.length} psGames={psGames} gamePassGames={gamePassGames} switchDeals={switchDeals} />
     </main>
   );
 }

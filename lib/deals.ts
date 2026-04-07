@@ -13,6 +13,7 @@ export interface Deal {
   steam_count?: number;
   metacritic?: number;
   thumb?: string;
+  currency_symbol?: string; // defaults to "$" when absent
 }
 
 export interface DealsData {
@@ -26,6 +27,7 @@ export interface DealsData {
   ps_deals: Deal[];
   ig_deals: Deal[];
   eneba_deals: Deal[];
+  switch_deals?: Deal[]; // optional — populated from live fetch, not backend
 }
 
 export interface EpicGame {
@@ -389,6 +391,79 @@ export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> 
     // Cache the full sorted list; callers slice to their display count
     cache.set(GAMEPASS_CACHE_KEY, { data: games, ts: Date.now() });
     return games.slice(0, display);
+  } catch {
+    return [];
+  }
+}
+
+const SWITCH_JUNK_KW = [
+  "hentai", "ecchi", "sexy", "nude", "adult", "xxx", "eroge",
+  "mahjong solitaire", "nonogram", "sudoku",
+  "soundtrack", "ost", "artbook", "dlc", "season pass",
+  "bundle", "collection pack",
+];
+
+export async function fetchSwitchDealsLive(): Promise<Deal[]> {
+  try {
+    const params = new URLSearchParams({
+      "q": "*:*",
+      "fq": "type:GAME AND price_has_discount_b:true AND price_discount_percentage_f:[40 TO *] AND price_regular_f:[5 TO *]",
+      "rows": "80",
+      "wt": "json",
+      "fl": "title,price_regular_f,price_discounted_f,price_discount_percentage_f,image_url_sq_s,url",
+      "sort": "price_discount_percentage_f desc",
+    });
+    const res = await fetch(
+      `https://searching.nintendo-europe.com/en/select?${params}`,
+      {
+        headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" },
+        signal: AbortSignal.timeout(8000),
+      }
+    );
+    if (!res.ok) return [];
+
+    const data = await res.json() as Record<string, unknown>;
+    const docs = ((data as Record<string, Record<string, unknown[]>>).response?.docs ?? []) as Record<string, unknown>[];
+
+    const deals: Deal[] = [];
+    const seen = new Set<string>();
+
+    for (const doc of docs) {
+      const title = String(doc.title ?? "").trim();
+      if (!title) continue;
+
+      const key = title.toLowerCase();
+      if (seen.has(key)) continue;
+      if (SWITCH_JUNK_KW.some(kw => key.includes(kw))) continue;
+      if (JUNK_KW.some(kw => key.includes(kw))) continue;
+
+      const salePrice = doc.price_discounted_f as number | undefined;
+      const regularPrice = doc.price_regular_f as number | undefined;
+      const discountPct = doc.price_discount_percentage_f as number | undefined;
+
+      if (!salePrice || !regularPrice || !discountPct) continue;
+      if (salePrice <= 0) continue;
+
+      const storeUrl = doc.url
+        ? `https://www.nintendo.com${doc.url}`
+        : "https://www.nintendo.com/us/store/games/";
+
+      seen.add(key);
+      deals.push({
+        title,
+        sale_price: salePrice.toFixed(2),
+        normal_price: regularPrice.toFixed(2),
+        savings_pct: Math.round(discountPct),
+        store_name: "Nintendo eShop",
+        deal_url: storeUrl,
+        currency_symbol: "€",
+        thumb: String(doc.image_url_sq_s ?? ""),
+      });
+
+      if (deals.length >= 20) break;
+    }
+
+    return deals;
   } catch {
     return [];
   }

@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "shared.fastly.steamstatic.com" },
       { protocol: "https", hostname: "cdn1.epicgames.com" },
       { protocol: "https", hostname: "*.epicgames.com" },
+      { protocol: "https", hostname: "www.nintendo.com" },
     ],
   },
 };

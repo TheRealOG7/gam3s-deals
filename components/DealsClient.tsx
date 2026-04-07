@@ -51,13 +51,15 @@ interface DealsClientProps {
   dealCount: number;
   psGames: PsGame[];
   gamePassGames: GamePassGame[];
+  switchDeals: Deal[];
 }
 
-export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames, gamePassGames }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames, gamePassGames, switchDeals }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
     deals.ig_deals, deals.eneba_deals,
+    switchDeals,
   ] : [];
 
   const bestMap = buildBestDeals(allSections);
@@ -97,6 +99,8 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   const bestDealsPool = sortByQualityDiscount([
     ...(deals?.best_deals ?? []), ...(deals?.gog_deals ?? []),
     ...(deals?.ig_deals ?? []), ...(deals?.eneba_deals ?? []),
+    ...(deals?.ps_deals ?? []),
+    ...switchDeals,
   ]);
   const biggestDiscountsPool = sortByDollarSaved([
     ...(deals?.biggest_discounts ?? []),
@@ -113,6 +117,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
   const biggestDiscounts = deals ? filterBest(biggestDiscountsPool, bestMap) : [];
   const igDeals = deals ? filterBest(deals.ig_deals ?? [], bestMap) : [];
   const enebaDeals = deals ? filterBest(deals.eneba_deals ?? [], bestMap) : [];
+  const switchDealsFiltered = switchDeals.filter(d => images[d.title]);
 
   const epicGames = egs ? [...(egs.current_free ?? []), ...(egs.upcoming_free ?? [])] : [];
 
@@ -202,14 +207,6 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
         </DealSection>
       )}
 
-      {aaadeals.length > 0 && (
-        <DealSection title="AAA on Sale" allDeals={aaaPool} resolvedUrls={urls} resolvedReviews={reviews}>
-          {aaadeals.filter(d => images[d.title]).map((d) => (
-            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
-          ))}
-        </DealSection>
-      )}
-
       {psDeals.length > 0 && (
         <DealSection
           logo={<Image src="/logos/playstation.png" alt="PlayStation" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
@@ -219,6 +216,28 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           resolvedReviews={reviews}
         >
           {psDeals.filter(d => images[d.title]).map((d) => (
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
+          ))}
+        </DealSection>
+      )}
+
+      {switchDealsFiltered.length > 0 && (
+        <DealSection
+          logo={<Image src="/logos/switch.png" alt="Nintendo Switch" width={32} height={32} unoptimized style={{ width: 32, height: 32, objectFit: "contain", display: "block" }} onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+          title="Deals"
+          allDeals={switchDeals}
+          resolvedUrls={urls}
+          resolvedReviews={reviews}
+        >
+          {switchDealsFiltered.map((d) => (
+            <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={d.deal_url} review={null} />
+          ))}
+        </DealSection>
+      )}
+
+      {aaadeals.length > 0 && (
+        <DealSection title="AAA on Sale" allDeals={aaaPool} resolvedUrls={urls} resolvedReviews={reviews}>
+          {aaadeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
