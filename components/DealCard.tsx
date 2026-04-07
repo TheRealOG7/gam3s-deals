@@ -75,7 +75,10 @@ export function DealCard({ deal, image, href, review }: DealCardProps) {
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
           style={{ objectFit: "cover" }}
           unoptimized
-          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          onError={(e) => {
+            const card = (e.target as HTMLImageElement).closest(".deal-card-link");
+            if (card) (card as HTMLElement).style.display = "none";
+          }}
         />
       )}
       {/* Bottom vignette */}
