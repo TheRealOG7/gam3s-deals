@@ -114,18 +114,18 @@ async function resolveReviews(deals: Deal[]): Promise<Record<string, { text: str
   return reviews;
 }
 
-// ── Steam portrait validator (not all games have library_600x900.jpg) ─────────
-const steamPortraitCache = new Map<string, boolean>();
+// ── Image URL validator — HEAD check with cache ───────────────────────────────
+const imageExistsCache = new Map<string, boolean>();
 
-async function steamPortraitExists(url: string): Promise<boolean> {
-  if (steamPortraitCache.has(url)) return steamPortraitCache.get(url)!;
+async function imageExists(url: string): Promise<boolean> {
+  if (imageExistsCache.has(url)) return imageExistsCache.get(url)!;
   try {
     const res = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(4000) });
     const ok = res.ok;
-    steamPortraitCache.set(url, ok);
+    imageExistsCache.set(url, ok);
     return ok;
   } catch {
-    steamPortraitCache.set(url, false);
+    imageExistsCache.set(url, false);
     return false;
   }
 }
@@ -146,14 +146,16 @@ async function resolveImages(
     if (portrait && capsule) {
       // Steam game: try portrait first, always fall back to capsule (universally available)
       fns.push(async () => {
-        const ok = await steamPortraitExists(portrait);
+        const ok = await imageExists(portrait);
         return ok ? portrait : capsule;
       });
     } else {
-      // No steam_url: try RAWG, then fall back to deal's own thumbnail
+      // No steam_url: try RAWG (validated), then deal thumbnail (validated), else null
       fns.push(async () => {
         const rawg = await lookupRawgImage(deal.title);
-        return rawg || deal.thumb || null;
+        if (rawg && await imageExists(rawg)) return rawg;
+        if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
+        return null;
       });
     }
   }
@@ -161,18 +163,22 @@ async function resolveImages(
     keys.push(g.title);
     fns.push(async () => {
       const rawg = await lookupRawgImage(g.title);
-      if (rawg) return rawg;
+      if (rawg && await imageExists(rawg)) return rawg;
       // Fall back to Steam CDN when RAWG has no result
       const appId = await findSteamAppId(g.title);
       if (!appId) return null;
       const portrait = `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/library_600x900.jpg`;
-      const ok = await steamPortraitExists(portrait);
+      const ok = await imageExists(portrait);
       return ok ? portrait : `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/capsule_616x353.jpg`;
     });
   }
   for (const g of psGames) {
     keys.push(g.title);
-    fns.push(() => lookupRawgImage(g.title));
+    fns.push(async () => {
+      const rawg = await lookupRawgImage(g.title);
+      if (rawg && await imageExists(rawg)) return rawg;
+      return null;
+    });
   }
 
   const results = await batch(fns, 6);

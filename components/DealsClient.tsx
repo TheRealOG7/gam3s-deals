@@ -155,7 +155,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
                 badgeColor="dim"
                 style={{ marginBottom: 0 }}
               >
-                {epicGames.map((g) => (
+                {epicGames.filter(g => images[g.title]).map((g) => (
                   <EpicFreeCard
                     key={g.title}
                     game={g}
@@ -174,7 +174,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
                 badgeColor="dim"
                 style={{ marginBottom: 0 }}
               >
-                {psGames.map((g) => (
+                {psGames.filter(g => images[g.title]).map((g) => (
                   <PsPlusCard key={g.title} game={g} image={images[g.title] ?? null} />
                 ))}
               </DealSection>
@@ -196,7 +196,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {bestDeals.length > 0 && (
         <DealSection title="Best Deals" allDeals={bestDealsPool} resolvedUrls={urls} resolvedReviews={reviews}>
-          {bestDeals.map((d) => (
+          {bestDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
@@ -204,7 +204,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {aaadeals.length > 0 && (
         <DealSection title="AAA on Sale" allDeals={aaaPool} resolvedUrls={urls} resolvedReviews={reviews}>
-          {aaadeals.map((d) => (
+          {aaadeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
@@ -218,7 +218,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           resolvedUrls={urls}
           resolvedReviews={reviews}
         >
-          {psDeals.map((d) => (
+          {psDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
@@ -226,7 +226,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
 
       {biggestDiscounts.length > 0 && (
         <DealSection title="Biggest Discounts" allDeals={biggestDiscountsPool} resolvedUrls={urls} resolvedReviews={reviews}>
-          {biggestDiscounts.map((d) => (
+          {biggestDiscounts.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
@@ -240,7 +240,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           resolvedUrls={urls}
           resolvedReviews={reviews}
         >
-          {igDeals.map((d) => (
+          {igDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
@@ -254,7 +254,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           resolvedUrls={urls}
           resolvedReviews={reviews}
         >
-          {enebaDeals.map((d) => (
+          {enebaDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
         </DealSection>
