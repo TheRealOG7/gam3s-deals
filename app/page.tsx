@@ -223,11 +223,19 @@ export default async function DealsPage() {
     fetchSwitchDealsLive(),
   ]);
 
+  const activeDeals = (arr: Deal[]) => (arr ?? []).filter(d => d.savings_pct > 0);
+
   // Inject live IG/Eneba data when the backend hasn't been updated yet
   const deals = rawDeals ? {
     ...rawDeals,
-    ig_deals: (rawDeals.ig_deals?.length ?? 0) > 0 ? rawDeals.ig_deals : liveIg,
-    eneba_deals: (rawDeals.eneba_deals?.length ?? 0) > 0 ? rawDeals.eneba_deals : liveEneba,
+    best_deals: activeDeals(rawDeals.best_deals),
+    gog_deals: activeDeals(rawDeals.gog_deals),
+    biggest_discounts: activeDeals(rawDeals.biggest_discounts),
+    top_rated: activeDeals(rawDeals.top_rated),
+    aaa_deals: activeDeals(rawDeals.aaa_deals),
+    ps_deals: activeDeals(rawDeals.ps_deals),
+    ig_deals: (rawDeals.ig_deals?.length ?? 0) > 0 ? activeDeals(rawDeals.ig_deals) : liveIg,
+    eneba_deals: (rawDeals.eneba_deals?.length ?? 0) > 0 ? activeDeals(rawDeals.eneba_deals) : liveEneba,
   } : null;
 
   // Only include sections that are actually displayed — top_rated is not shown
