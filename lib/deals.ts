@@ -460,43 +460,19 @@ export async function fetchPsDealsLive(): Promise<Deal[]> {
 
     parsed.sort((a, b) => b._score - a._score);
 
-    // Dedup by title
+    // Dedup by title (strip PS platform suffixes like "(PS4 and PS5)" for dedup key)
+    const cleanTitle = (t: string) => t.replace(/\s*\(ps[45]\s*(and\s*ps[45])?\)/gi, "").trim();
     const seen = new Map<string, ScoredDeal>();
     for (const d of parsed) {
-      const key = d.title.toLowerCase();
+      const key = cleanTitle(d.title).toLowerCase();
       if (!seen.has(key)) seen.set(key, d);
     }
-    const top15 = [...seen.values()].slice(0, 15);
+    const deals: Deal[] = [...seen.values()].slice(0, 15).map(({ _ppid: _p, _score: _s, ...rest }) => ({
+      ...rest,
+      // Strip platform suffix from title so RAWG/Steam image search works
+      title: cleanTitle(rest.title),
+    }));
 
-    // Parallel ppid lookups for PS Store URL + cover art (concurrency 5)
-    const key = apiKey;
-    let i = 0;
-    const results: ScoredDeal[] = new Array(top15.length);
-    async function worker() {
-      while (i < top15.length) {
-        const idx = i++;
-        const d = top15[idx];
-        if (d._ppid) {
-          try {
-            const r = await fetch(
-              `https://platprices.com/api.php?key=${encodeURIComponent(key)}&ppid=${encodeURIComponent(d._ppid)}&region=US`,
-              { headers: { "User-Agent": "GAM3SDeals/1.0" }, signal: AbortSignal.timeout(6000) }
-            );
-            if (r.ok) {
-              const info = await r.json() as Record<string, unknown>;
-              const psUrl = String(info.PSStoreURL ?? "");
-              if (psUrl.startsWith("http")) d.deal_url = psUrl;
-              const cover = String(info.CoverArt ?? info.Img ?? "");
-              if (cover.startsWith("http")) d.thumb = cover;
-            }
-          } catch { /* skip */ }
-        }
-        results[idx] = d;
-      }
-    }
-    await Promise.all(Array.from({ length: 5 }, worker));
-
-    const deals: Deal[] = results.map(({ _ppid: _p, _score: _s, ...rest }) => rest);
     cache.set(PS_DEALS_CACHE_KEY, { data: deals, ts: Date.now() });
     return deals;
   } catch {

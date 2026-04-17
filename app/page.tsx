@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // Recompute every 5 min; serve cached HTML instantly
 
 import { DealsClient } from "@/components/DealsClient";
 import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames, fetchSwitchDealsLive, fetchPsDealsLive } from "@/lib/deals";
@@ -144,11 +144,8 @@ async function resolveImages(
     const portrait = steamPortrait(deal.steam_url);
     const capsule = steamCapsule(deal.steam_url);
     if (portrait && capsule) {
-      // Steam game: try portrait first, always fall back to capsule (universally available)
-      fns.push(async () => {
-        const ok = await imageExists(portrait);
-        return ok ? portrait : capsule;
-      });
+      // Steam game: trust portrait directly — Steam CDN is reliable, client onError handles misses
+      fns.push(async () => portrait);
     } else {
           // No steam_url: for Nintendo eShop use thumb directly; for others try RAWG first
       fns.push(async () => {
