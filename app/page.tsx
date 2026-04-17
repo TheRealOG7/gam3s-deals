@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { DealsClient } from "@/components/DealsClient";
-import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames, fetchSwitchDealsLive } from "@/lib/deals";
+import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames, fetchSwitchDealsLive, fetchPsDealsLive } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
 import type { Deal, EpicGame, PsGame } from "@/lib/deals";
 
@@ -214,10 +214,11 @@ async function resolveUrls(deals: Deal[]): Promise<Record<string, string>> {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function DealsPage() {
-  const [[rawDeals, egs], liveIg, liveEneba, psGames, gamePassGames, switchDeals] = await Promise.all([
+  const [[rawDeals, egs], liveIg, liveEneba, livePsDeals, psGames, gamePassGames, switchDeals] = await Promise.all([
     Promise.all([fetchDeals(DASHBOARD_URL), fetchEgsGames(DASHBOARD_URL)]),
     fetchIgDealsLive(),
     fetchEnebaDealsLive(),
+    fetchPsDealsLive(),
     fetchPsPlusFreeGames(),
     fetchGamePassGames(100),
     fetchSwitchDealsLive(),
@@ -225,7 +226,9 @@ export default async function DealsPage() {
 
   const activeDeals = (arr: Deal[]) => (arr ?? []).filter(d => d.savings_pct > 0);
 
-  // Inject live IG/Eneba data when the backend hasn't been updated yet
+  // PS deals: always use live fetch (has cover art); fall back to backend if live returns nothing
+  const psDealsLive = livePsDeals.length > 0 ? livePsDeals : activeDeals(rawDeals?.ps_deals ?? []);
+
   const deals = rawDeals ? {
     ...rawDeals,
     best_deals: activeDeals(rawDeals.best_deals),
@@ -233,7 +236,7 @@ export default async function DealsPage() {
     biggest_discounts: activeDeals(rawDeals.biggest_discounts),
     top_rated: activeDeals(rawDeals.top_rated),
     aaa_deals: activeDeals(rawDeals.aaa_deals),
-    ps_deals: activeDeals(rawDeals.ps_deals),
+    ps_deals: psDealsLive,
     ig_deals: (rawDeals.ig_deals?.length ?? 0) > 0 ? activeDeals(rawDeals.ig_deals) : liveIg,
     eneba_deals: (rawDeals.eneba_deals?.length ?? 0) > 0 ? activeDeals(rawDeals.eneba_deals) : liveEneba,
   } : null;
@@ -244,7 +247,7 @@ export default async function DealsPage() {
     ...(deals?.gog_deals ?? []),
     ...(deals?.biggest_discounts ?? []),
     ...(deals?.aaa_deals ?? []),
-    ...(deals?.ps_deals ?? []),
+    ...psDealsLive,
     ...(deals?.ig_deals ?? []),
     ...(deals?.eneba_deals ?? []),
     ...switchDeals,

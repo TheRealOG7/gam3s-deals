@@ -396,6 +396,114 @@ export async function fetchGamePassGames(display = 25): Promise<GamePassGame[]> 
   }
 }
 
+const PS_JUNK_KW = [
+  "soundtrack", "avatar", "theme", "dlc", "season pass",
+  "expansion", "bundle", "pack", "costume", "skin",
+  "add-on", "addon", "content pack", "voice pack",
+  "emote", "wallpaper", "artbook",
+];
+
+const PS_DEALS_CACHE_KEY = "ps_deals_live";
+
+export async function fetchPsDealsLive(): Promise<Deal[]> {
+  const cached = cache.get(PS_DEALS_CACHE_KEY);
+  if (cached && Date.now() - cached.ts < TTL) return cached.data as Deal[];
+
+  const apiKey = process.env.PLATPRICES_API_KEY;
+  if (!apiKey) return [];
+
+  try {
+    const res = await fetch(
+      `https://platprices.com/api.php?key=${encodeURIComponent(apiKey)}&discount=1&region=US`,
+      { headers: { "User-Agent": "GAM3SDeals/1.0" }, signal: AbortSignal.timeout(10000) }
+    );
+    if (!res.ok) return [];
+    const data = await res.json() as Record<string, unknown>;
+    if (data.error && data.error !== 0) return [];
+
+    const raw = data.discounts;
+    const rawDeals: Record<string, unknown>[] = Array.isArray(raw)
+      ? raw
+      : Object.values((raw as Record<string, unknown>) ?? {});
+
+    type ScoredDeal = Deal & { _ppid: string; _score: number };
+    const parsed: ScoredDeal[] = [];
+
+    for (const item of rawDeals) {
+      const r = item as Record<string, unknown>;
+      const title = String(r.Name ?? "").trim();
+      if (!title) continue;
+      if (PS_JUNK_KW.some(k => title.toLowerCase().includes(k))) continue;
+
+      const saleCents = Number(r.SalePrice ?? 0);
+      const baseCents = Number(r.BasePrice ?? 0);
+      if (saleCents <= 0 || baseCents <= 0) continue;
+
+      const savingsPct = Math.round((1 - saleCents / baseCents) * 100);
+      if (savingsPct <= 0) continue;
+
+      const base = baseCents / 100;
+      const tier = base < 10 ? 0 : base < 30 ? 1 : base < 50 ? 2 : 3;
+
+      parsed.push({
+        title,
+        sale_price: (saleCents / 100).toFixed(2),
+        normal_price: (baseCents / 100).toFixed(2),
+        savings_pct: savingsPct,
+        store_name: "PlayStation",
+        deal_url: String(r.PlatPricesURL ?? ""),
+        expiry: r.DiscountedUntil ? String(r.DiscountedUntil) : null,
+        _ppid: String(r.PPID ?? ""),
+        _score: savingsPct + tier * 15,
+      });
+    }
+
+    parsed.sort((a, b) => b._score - a._score);
+
+    // Dedup by title
+    const seen = new Map<string, ScoredDeal>();
+    for (const d of parsed) {
+      const key = d.title.toLowerCase();
+      if (!seen.has(key)) seen.set(key, d);
+    }
+    const top15 = [...seen.values()].slice(0, 15);
+
+    // Parallel ppid lookups for PS Store URL + cover art (concurrency 5)
+    const key = apiKey;
+    let i = 0;
+    const results: ScoredDeal[] = new Array(top15.length);
+    async function worker() {
+      while (i < top15.length) {
+        const idx = i++;
+        const d = top15[idx];
+        if (d._ppid) {
+          try {
+            const r = await fetch(
+              `https://platprices.com/api.php?key=${encodeURIComponent(key)}&ppid=${encodeURIComponent(d._ppid)}&region=US`,
+              { headers: { "User-Agent": "GAM3SDeals/1.0" }, signal: AbortSignal.timeout(6000) }
+            );
+            if (r.ok) {
+              const info = await r.json() as Record<string, unknown>;
+              const psUrl = String(info.PSStoreURL ?? "");
+              if (psUrl.startsWith("http")) d.deal_url = psUrl;
+              const cover = String(info.CoverArt ?? info.Img ?? "");
+              if (cover.startsWith("http")) d.thumb = cover;
+            }
+          } catch { /* skip */ }
+        }
+        results[idx] = d;
+      }
+    }
+    await Promise.all(Array.from({ length: 5 }, worker));
+
+    const deals: Deal[] = results.map(({ _ppid: _p, _score: _s, ...rest }) => rest);
+    cache.set(PS_DEALS_CACHE_KEY, { data: deals, ts: Date.now() });
+    return deals;
+  } catch {
+    return [];
+  }
+}
+
 const SWITCH_JUNK_KW = [
   "hentai", "ecchi", "sexy", "nude", "adult", "xxx", "eroge",
   "mahjong solitaire", "nonogram", "sudoku",
