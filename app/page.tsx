@@ -3,6 +3,7 @@ export const revalidate = 300; // Recompute every 5 min; serve cached HTML insta
 import { DealsClient } from "@/components/DealsClient";
 import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames, fetchSwitchDealsLive, fetchPsDealsLive } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
+import { lookupPsnImage } from "@/lib/psn";
 import type { Deal, EpicGame, PsGame } from "@/lib/deals";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "";
@@ -147,7 +148,7 @@ async function resolveImages(
       // Steam game: trust portrait directly — Steam CDN is reliable, client onError handles misses
       fns.push(async () => portrait);
     } else {
-          // No steam_url: for Nintendo eShop use thumb directly; for others try RAWG first
+          // No steam_url: for Nintendo eShop use thumb directly; PlayStation tries PSN search; others try RAWG
       fns.push(async () => {
         if (deal.store_name === "Nintendo eShop") {
           if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
@@ -156,6 +157,10 @@ async function resolveImages(
         const rawg = await lookupRawgImage(deal.title);
         if (rawg && await imageExists(rawg)) return rawg;
         if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
+        if (deal.store_name === "PlayStation") {
+          const psn = await lookupPsnImage(deal.title);
+          if (psn && await imageExists(psn)) return psn;
+        }
         return null;
       });
     }
