@@ -35,6 +35,7 @@ export async function GET() {
         const cleanTitle = (t: string) => t.replace(/\s*\(ps[45]\s*(and\s*ps[45])?\)/gi, "").trim();
         const parsed = [];
         for (const item of items) {
+          if (!item || typeof item !== "object") continue;
           const r = item as Record<string, unknown>;
           const title = String(r.Name ?? "").trim();
           if (!title) continue;
@@ -43,7 +44,6 @@ export async function GET() {
           const baseCents = Number(r.BasePrice ?? 0);
           if (saleCents <= 0 || baseCents <= 0) continue;
           const savingsPct = Math.round((1 - saleCents / baseCents) * 100);
-          if (savingsPct <= 0) continue;
           parsed.push({ title: cleanTitle(title), raw_title: title, savings_pct: savingsPct, sale: (saleCents/100).toFixed(2), normal: (baseCents/100).toFixed(2) });
         }
         parsed.sort((a, b) => b.savings_pct - a.savings_pct);

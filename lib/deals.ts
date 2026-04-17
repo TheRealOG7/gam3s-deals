@@ -430,6 +430,7 @@ export async function fetchPsDealsLive(): Promise<Deal[]> {
     const parsed: ScoredDeal[] = [];
 
     for (const item of rawDeals) {
+      if (!item || typeof item !== "object") continue;
       const r = item as Record<string, unknown>;
       const title = String(r.Name ?? "").trim();
       if (!title) continue;
@@ -440,7 +441,7 @@ export async function fetchPsDealsLive(): Promise<Deal[]> {
       if (saleCents <= 0 || baseCents <= 0) continue;
 
       const savingsPct = Math.round((1 - saleCents / baseCents) * 100);
-      if (savingsPct <= 0) continue;
+      if (savingsPct < 10) continue; // skip trivial discounts
 
       const base = baseCents / 100;
       const tier = base < 10 ? 0 : base < 30 ? 1 : base < 50 ? 2 : 3;
