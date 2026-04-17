@@ -3,7 +3,6 @@ export const revalidate = 300; // Recompute every 5 min; serve cached HTML insta
 import { DealsClient } from "@/components/DealsClient";
 import { fetchDeals, fetchEgsGames, fetchIgDealsLive, fetchEnebaDealsLive, fetchPsPlusFreeGames, fetchGamePassGames, fetchSwitchDealsLive, fetchPsDealsLive } from "@/lib/deals";
 import { lookupRawgImage } from "@/lib/rawg";
-import { lookupPsnImage } from "@/lib/psn";
 import type { Deal, EpicGame, PsGame } from "@/lib/deals";
 
 const DASHBOARD_URL = process.env.DASHBOARD_URL ?? "";
@@ -154,13 +153,16 @@ async function resolveImages(
           if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
           return null;
         }
+        // PlayStation: prefer direct PS CDN thumb (scraped from PlatPrices), fall back to RAWG
+        if (deal.store_name === "PlayStation") {
+          if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
+          const rawg = await lookupRawgImage(deal.title);
+          if (rawg && await imageExists(rawg)) return rawg;
+          return null;
+        }
         const rawg = await lookupRawgImage(deal.title);
         if (rawg && await imageExists(rawg)) return rawg;
         if (deal.thumb && await imageExists(deal.thumb)) return deal.thumb;
-        if (deal.store_name === "PlayStation") {
-          const psn = await lookupPsnImage(deal.title);
-          if (psn && await imageExists(psn)) return psn;
-        }
         return null;
       });
     }

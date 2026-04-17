@@ -405,75 +405,118 @@ const PS_JUNK_KW = [
 
 const PS_DEALS_CACHE_KEY = "ps_deals_live";
 
+function parsePlatPricesPage(html: string): Deal[] {
+  const cleanTitle = (t: string) =>
+    t.replace(/\s*\(ps[45]\s*(and\s*ps[45])?\)/gi, "").replace(/&amp;/g, "&").trim();
+
+  const games: Array<{ title: string; discount: number; sale: number; normal: number; img: string; url: string; saved: number }> = [];
+  let pos = 0;
+
+  while (true) {
+    const aStart = html.indexOf("<a class='game-container", pos);
+    if (aStart === -1) break;
+
+    const hrefStart = html.indexOf("href='", aStart);
+    const hrefEnd = html.indexOf("'", hrefStart + 6);
+    const href = hrefStart !== -1 ? html.slice(hrefStart + 6, hrefEnd) : "";
+
+    const aEnd = html.indexOf("</a>", aStart + 10);
+    if (aEnd === -1) { pos = aStart + 1; continue; }
+
+    const content = html.slice(aStart, aEnd);
+
+    const titleM = content.match(/alt='([^']+)'/);
+    const imgM = content.match(/onerror="this\.src='(https:\/\/image\.api\.playstation\.com[^'?]+)/);
+    const discountM = content.match(/game-tile-discount">([-\d]+)%/);
+    const normalM = content.match(/strike-price[^>]*>\$([\d.]+)/);
+
+    if (titleM && discountM) {
+      const title = cleanTitle(titleM[1]);
+      const discount = parseInt(discountM[1], 10);
+      const img = imgM ? imgM[1] : "";
+      const normal = normalM ? parseFloat(normalM[1]) : 0;
+
+      const allPrices = [...content.matchAll(/\$([\d.]+)/g)].map(m => parseFloat(m[1]));
+      const sale = allPrices.length > 0 ? Math.min(...allPrices) : 0;
+      const normalFinal = normal > 0 ? normal : (allPrices.length >= 2 ? Math.max(...allPrices) : 0);
+
+      if (
+        discount <= -10 &&
+        sale > 0 && normalFinal > 0 &&
+        !PS_JUNK_KW.some(k => title.toLowerCase().includes(k))
+      ) {
+        games.push({
+          title, discount, sale, normal: normalFinal, img,
+          url: `https://platprices.com${href}`,
+          saved: normalFinal - sale,
+        });
+      }
+    }
+
+    pos = aEnd + 4;
+  }
+
+  // Dedup by normalized title
+  const seen = new Map<string, typeof games[0]>();
+  for (const g of games) {
+    const key = g.title.toLowerCase();
+    const ex = seen.get(key);
+    if (!ex || g.saved > ex.saved) seen.set(key, g);
+  }
+
+  return [...seen.values()]
+    .sort((a, b) => b.saved - a.saved)
+    .slice(0, 20)
+    .map(g => ({
+      title: g.title,
+      sale_price: g.sale.toFixed(2),
+      normal_price: g.normal.toFixed(2),
+      savings_pct: Math.abs(g.discount),
+      store_name: "PlayStation" as const,
+      deal_url: g.url,
+      thumb: g.img || undefined,
+    }));
+}
+
 export async function fetchPsDealsLive(): Promise<Deal[]> {
   const cached = cache.get(PS_DEALS_CACHE_KEY);
   if (cached && Date.now() - cached.ts < TTL) return cached.data as Deal[];
 
-  const apiKey = process.env.PLATPRICES_API_KEY;
-  if (!apiKey) return [];
-
   try {
-    const res = await fetch(
-      `https://platprices.com/api.php?key=${encodeURIComponent(apiKey)}&discount=1&region=US`,
-      { headers: { "User-Agent": "GAM3SDeals/1.0" }, signal: AbortSignal.timeout(10000) }
+    const [res1, res2] = await Promise.all([
+      fetch("https://platprices.com/search.php?sort=discounted&order=desc&discount=1", {
+        headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
+        signal: AbortSignal.timeout(12000),
+      }),
+      fetch("https://platprices.com/search.php?sort=discounted&order=desc&discount=1&page=2", {
+        headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36" },
+        signal: AbortSignal.timeout(12000),
+      }),
+    ]);
+
+    const htmlParts: string[] = [];
+    if (res1.ok) htmlParts.push(await res1.text());
+    if (res2.ok) htmlParts.push(await res2.text());
+    if (htmlParts.length === 0) return [];
+
+    const allGames: Deal[] = [];
+    const seen = new Set<string>();
+    for (const html of htmlParts) {
+      for (const deal of parsePlatPricesPage(html)) {
+        const key = deal.title.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          allGames.push(deal);
+        }
+      }
+    }
+
+    allGames.sort((a, b) =>
+      (parseFloat(b.normal_price) - parseFloat(b.sale_price)) -
+      (parseFloat(a.normal_price) - parseFloat(a.sale_price))
     );
-    if (!res.ok) return [];
-    const data = await res.json() as Record<string, unknown>;
-    if (data.error && data.error !== 0) return [];
 
-    const raw = data.discounts;
-    const rawDeals: Record<string, unknown>[] = Array.isArray(raw)
-      ? raw
-      : Object.values((raw as Record<string, unknown>) ?? {});
-
-    type ScoredDeal = Deal & { _ppid: string; _score: number };
-    const parsed: ScoredDeal[] = [];
-
-    for (const item of rawDeals) {
-      if (!item || typeof item !== "object") continue;
-      const r = item as Record<string, unknown>;
-      const title = String(r.Name ?? "").trim();
-      if (!title) continue;
-      if (PS_JUNK_KW.some(k => title.toLowerCase().includes(k))) continue;
-
-      const saleCents = Number(r.SalePrice ?? 0);
-      const baseCents = Number(r.BasePrice ?? 0);
-      if (saleCents <= 0 || baseCents <= 0) continue;
-
-      const savingsPct = Math.round((1 - saleCents / baseCents) * 100);
-      if (savingsPct < 10) continue; // skip trivial discounts
-
-      const base = baseCents / 100;
-      const tier = base < 10 ? 0 : base < 30 ? 1 : base < 50 ? 2 : 3;
-
-      parsed.push({
-        title,
-        sale_price: (saleCents / 100).toFixed(2),
-        normal_price: (baseCents / 100).toFixed(2),
-        savings_pct: savingsPct,
-        store_name: "PlayStation",
-        deal_url: String(r.PlatPricesURL ?? ""),
-        expiry: r.DiscountedUntil ? String(r.DiscountedUntil) : null,
-        _ppid: String(r.PPID ?? ""),
-        _score: savingsPct + tier * 15,
-      });
-    }
-
-    parsed.sort((a, b) => b._score - a._score);
-
-    // Dedup by title (strip PS platform suffixes like "(PS4 and PS5)" for dedup key)
-    const cleanTitle = (t: string) => t.replace(/\s*\(ps[45]\s*(and\s*ps[45])?\)/gi, "").trim();
-    const seen = new Map<string, ScoredDeal>();
-    for (const d of parsed) {
-      const key = cleanTitle(d.title).toLowerCase();
-      if (!seen.has(key)) seen.set(key, d);
-    }
-    const deals: Deal[] = [...seen.values()].slice(0, 15).map(({ _ppid: _p, _score: _s, ...rest }) => ({
-      ...rest,
-      // Strip platform suffix from title so RAWG/Steam image search works
-      title: cleanTitle(rest.title),
-    }));
-
+    const deals = allGames.slice(0, 15);
     cache.set(PS_DEALS_CACHE_KEY, { data: deals, ts: Date.now() });
     return deals;
   } catch {
