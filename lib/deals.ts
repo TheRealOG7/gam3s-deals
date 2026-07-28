@@ -262,22 +262,22 @@ export async function fetchEnebaDealsLive(): Promise<Deal[]> {
 
 // PS Plus Essential monthly free games — UPDATE first Tuesday of each month
 // Source: https://blog.playstation.com (search "PlayStation Plus Monthly Games for <Month>")
-// April 2026 (Apr 7 – May 4)
+// July 2026 (Jul 7 – Aug 3)
 const PS_PLUS_MONTHLY: PsGame[] = [
   {
-    title: "Lords of the Fallen",
-    original_price: "$59.99",
-    store_url: "https://store.playstation.com/en-us/search/Lords%20of%20the%20Fallen",
+    title: "Call of Duty: Modern Warfare III",
+    original_price: "$69.99",
+    store_url: "https://store.playstation.com/en-us/search/Call%20of%20Duty%20Modern%20Warfare%20III",
   },
   {
-    title: "Tomb Raider I-III Remastered",
+    title: "For the King II",
     original_price: "$29.99",
-    store_url: "https://store.playstation.com/en-us/search/Tomb%20Raider%20I-III%20Remastered",
+    store_url: "https://store.playstation.com/en-us/search/For%20the%20King%20II",
   },
   {
-    title: "Sword Art Online Fractured Daydream",
-    original_price: "$59.99",
-    store_url: "https://store.playstation.com/en-us/search/Sword%20Art%20Online%20Fractured%20Daydream",
+    title: "CrossCode",
+    original_price: "$19.99",
+    store_url: "https://store.playstation.com/en-us/search/CrossCode",
   },
 ];
 
