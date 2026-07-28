@@ -342,7 +342,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
                     }}
                   >
                     <div style={{
-                      background: "rgba(8,12,22,0.92)", border: "1px solid var(--green)",
+                      background: "rgba(8,12,22,0.92)",
                       borderRadius: 10, padding: "12px 20px", textAlign: "left",
                       backdropFilter: "blur(8px)",
                       boxShadow: "0 0 24px rgba(0,0,0,0.6)",
@@ -351,7 +351,7 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
                         🔒 Unlock all deals
                       </div>
                       <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginBottom: 8 }}>
-                        +{hiddenCount} more deals hidden
+                        +{hiddenCount} more Deals hidden
                       </div>
                       <div style={{
                         display: "inline-block", fontSize: 11, fontWeight: 800,
