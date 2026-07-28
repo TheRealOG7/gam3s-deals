@@ -322,30 +322,44 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
               {visibleChildren}
               {hiddenCount > 0 && (
                 <div style={{ position: "relative", display: "flex", gap: 10, flexShrink: 0 }}>
-                  <div style={{ display: "flex", gap: 10, filter: "blur(7px)", pointerEvents: "none", userSelect: "none", opacity: 0.7 }}>
+                  <div style={{ display: "flex", gap: 10, filter: "blur(7px)", pointerEvents: "none", userSelect: "none", opacity: 0.55 }}>
                     {hiddenChildren}
                   </div>
+                  {/* Dark gradient fade from left edge so text is always readable */}
+                  <div style={{
+                    position: "absolute", inset: 0, pointerEvents: "none",
+                    background: "linear-gradient(to right, rgba(8,12,22,0.82) 0%, rgba(8,12,22,0.45) 40%, transparent 100%)",
+                  }} />
                   <a
                     href={GAMES_PLUS_URL}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
                       position: "absolute", inset: 0,
-                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center",
+                      paddingLeft: 20,
                       textDecoration: "none",
-                      background: "linear-gradient(to right, rgba(10,15,25,0.1) 0%, rgba(10,15,25,0.55) 30%)",
                     }}
                   >
                     <div style={{
-                      background: "rgba(10,15,25,0.88)", border: "1px solid var(--green)",
-                      borderRadius: 10, padding: "10px 18px", textAlign: "center",
-                      backdropFilter: "blur(6px)",
+                      background: "rgba(8,12,22,0.92)", border: "1px solid var(--green)",
+                      borderRadius: 10, padding: "12px 20px", textAlign: "left",
+                      backdropFilter: "blur(8px)",
+                      boxShadow: "0 0 24px rgba(0,0,0,0.6)",
                     }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", marginBottom: 3 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "var(--green)", marginBottom: 4, letterSpacing: "0.02em" }}>
                         🔒 Unlock all deals
                       </div>
-                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                        +{hiddenCount} more hidden · Subscribe to Games+
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", marginBottom: 8 }}>
+                        +{hiddenCount} more deals hidden
+                      </div>
+                      <div style={{
+                        display: "inline-block", fontSize: 11, fontWeight: 800,
+                        color: "#000", background: "var(--green)",
+                        padding: "4px 12px", borderRadius: 5,
+                        textTransform: "uppercase", letterSpacing: "0.05em",
+                      }}>
+                        Subscribe to Games+
                       </div>
                     </div>
                   </a>
