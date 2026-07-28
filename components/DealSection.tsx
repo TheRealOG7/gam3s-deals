@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, type ReactNode } from "react";
+import React, { useRef, useState, useEffect, type ReactNode } from "react";
 import type { Deal, GamePassGame } from "@/lib/deals";
 
 interface DealSectionProps {
@@ -16,6 +16,7 @@ interface DealSectionProps {
   children: ReactNode;
   style?: React.CSSProperties;
   viewAllHref?: string;
+  gated?: boolean;
 }
 
 const badgeStyles: Record<string, React.CSSProperties> = {
@@ -166,7 +167,10 @@ function DealsModal({ title, deals, resolvedUrls, resolvedReviews, onClose }: { 
   );
 }
 
-export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, allPassGames, resolvedUrls, resolvedReviews, headerExtra, children, style, viewAllHref }: DealSectionProps) {
+const GATED_VISIBLE = 3;
+const GAMES_PLUS_URL = "https://games.gg/games-plus/";
+
+export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, allPassGames, resolvedUrls, resolvedReviews, headerExtra, children, style, viewAllHref, gated }: DealSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -241,7 +245,12 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
     </span>
   );
 
-  const hasViewAll = (allDeals && allDeals.length > 0) || (allPassGames && allPassGames.length > 0);
+  const hasViewAll = !gated && ((allDeals && allDeals.length > 0) || (allPassGames && allPassGames.length > 0));
+
+  const childArray = gated ? React.Children.toArray(children) : null;
+  const visibleChildren = gated ? childArray!.slice(0, GATED_VISIBLE) : null;
+  const hiddenChildren = gated ? childArray!.slice(GATED_VISIBLE) : null;
+  const hiddenCount = hiddenChildren?.length ?? 0;
 
   return (
     <section style={{ marginBottom: 36, ...style }}>
@@ -308,7 +317,42 @@ export function DealSection({ title, logo, badge, badgeColor = "dim", allDeals, 
           className="card-scroll"
           style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 8 }}
         >
-          {children}
+          {gated ? (
+            <>
+              {visibleChildren}
+              {hiddenCount > 0 && (
+                <div style={{ position: "relative", display: "flex", gap: 10, flexShrink: 0 }}>
+                  <div style={{ display: "flex", gap: 10, filter: "blur(7px)", pointerEvents: "none", userSelect: "none", opacity: 0.7 }}>
+                    {hiddenChildren}
+                  </div>
+                  <a
+                    href={GAMES_PLUS_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      position: "absolute", inset: 0,
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      textDecoration: "none",
+                      background: "linear-gradient(to right, rgba(10,15,25,0.1) 0%, rgba(10,15,25,0.55) 30%)",
+                    }}
+                  >
+                    <div style={{
+                      background: "rgba(10,15,25,0.88)", border: "1px solid var(--green)",
+                      borderRadius: 10, padding: "10px 18px", textAlign: "center",
+                      backdropFilter: "blur(6px)",
+                    }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--green)", marginBottom: 3 }}>
+                        🔒 Unlock all deals
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+                        +{hiddenCount} more hidden · Subscribe to Games+
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              )}
+            </>
+          ) : children}
         </div>
         {hasOverflow && (
           <button onClick={() => scroll("right")} style={arrowBtn("right", canScrollRight)} aria-label="Scroll right">

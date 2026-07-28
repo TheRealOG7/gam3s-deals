@@ -52,9 +52,10 @@ interface DealsClientProps {
   psGames: PsGame[];
   gamePassGames: GamePassGame[];
   switchDeals: Deal[];
+  gated?: boolean;
 }
 
-export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames, gamePassGames, switchDeals }: DealsClientProps) {
+export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, dealCount, psGames, gamePassGames, switchDeals, gated }: DealsClientProps) {
   const allSections = deals ? [
     deals.best_deals, deals.gog_deals, deals.biggest_discounts,
     deals.top_rated, deals.aaa_deals, deals.ps_deals,
@@ -200,7 +201,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       )}
 
       {bestDeals.length > 0 && (
-        <DealSection title="Best Deals" allDeals={bestDealsPool} resolvedUrls={urls} resolvedReviews={reviews}>
+        <DealSection title="Best Deals" allDeals={bestDealsPool} resolvedUrls={urls} resolvedReviews={reviews} gated={gated}>
           {bestDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
@@ -214,6 +215,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           allDeals={deals?.ps_deals ?? []}
           resolvedUrls={urls}
           resolvedReviews={reviews}
+          gated={gated}
         >
           {psDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
@@ -228,6 +230,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           allDeals={switchDeals}
           resolvedUrls={urls}
           resolvedReviews={reviews}
+          gated={gated}
         >
           {switchDealsFiltered.map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={d.deal_url} review={null} />
@@ -236,7 +239,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       )}
 
       {aaadeals.length > 0 && (
-        <DealSection title="AAA on Sale" allDeals={aaaPool} resolvedUrls={urls} resolvedReviews={reviews}>
+        <DealSection title="AAA on Sale" allDeals={aaaPool} resolvedUrls={urls} resolvedReviews={reviews} gated={gated}>
           {aaadeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
@@ -244,7 +247,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
       )}
 
       {biggestDiscounts.length > 0 && (
-        <DealSection title="Biggest Discounts" allDeals={biggestDiscountsPool} resolvedUrls={urls} resolvedReviews={reviews}>
+        <DealSection title="Biggest Discounts" allDeals={biggestDiscountsPool} resolvedUrls={urls} resolvedReviews={reviews} gated={gated}>
           {biggestDiscounts.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
           ))}
@@ -258,6 +261,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           allDeals={deals?.ig_deals ?? []}
           resolvedUrls={urls}
           resolvedReviews={reviews}
+          gated={gated}
         >
           {igDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
@@ -272,6 +276,7 @@ export function DealsClient({ deals, egs, images, urls, reviews, totalSavings, d
           allDeals={deals?.eneba_deals ?? []}
           resolvedUrls={urls}
           resolvedReviews={reviews}
+          gated={gated}
         >
           {enebaDeals.filter(d => images[d.title]).map((d) => (
             <DealCard key={d.title} deal={d} image={images[d.title] ?? null} href={urls[d.title] ?? d.deal_url} review={reviews[d.title] ?? null} />
