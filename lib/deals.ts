@@ -262,22 +262,27 @@ export async function fetchEnebaDealsLive(): Promise<Deal[]> {
 
 // PS Plus Essential monthly free games — UPDATE first Tuesday of each month
 // Source: https://blog.playstation.com (search "PlayStation Plus Monthly Games for <Month>")
-// July 2026 (Jul 7 – Aug 3)
+// September 2026 (Sep 1 – Oct 5)
 const PS_PLUS_MONTHLY: PsGame[] = [
   {
-    title: "Call of Duty: Modern Warfare III",
+    title: "Sniper Elite: Resistance",
+    original_price: "$59.99",
+    store_url: "https://store.playstation.com/en-us/search/Sniper%20Elite%20Resistance",
+  },
+  {
+    title: "MLB The Show 26",
     original_price: "$69.99",
-    store_url: "https://store.playstation.com/en-us/search/Call%20of%20Duty%20Modern%20Warfare%20III",
+    store_url: "https://store.playstation.com/en-us/search/MLB%20The%20Show%2026",
   },
   {
-    title: "For the King II",
-    original_price: "$29.99",
-    store_url: "https://store.playstation.com/en-us/search/For%20the%20King%20II",
+    title: "Wobbly Life",
+    original_price: "$24.99",
+    store_url: "https://store.playstation.com/en-us/search/Wobbly%20Life",
   },
   {
-    title: "CrossCode",
-    original_price: "$19.99",
-    store_url: "https://store.playstation.com/en-us/search/CrossCode",
+    title: "Chained Echoes",
+    original_price: "$24.99",
+    store_url: "https://store.playstation.com/en-us/search/Chained%20Echoes",
   },
 ];
 
