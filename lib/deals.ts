@@ -262,27 +262,22 @@ export async function fetchEnebaDealsLive(): Promise<Deal[]> {
 
 // PS Plus Essential monthly free games — UPDATE first Tuesday of each month
 // Source: https://blog.playstation.com (search "PlayStation Plus Monthly Games for <Month>")
-// September 2026 (Sep 1 – Oct 5)
+// October 2026 (Oct 6 – Nov 2)
 const PS_PLUS_MONTHLY: PsGame[] = [
   {
-    title: "Sniper Elite: Resistance",
-    original_price: "$59.99",
-    store_url: "https://store.playstation.com/en-us/search/Sniper%20Elite%20Resistance",
-  },
-  {
-    title: "MLB The Show 26",
+    title: "F1 25",
     original_price: "$69.99",
-    store_url: "https://store.playstation.com/en-us/search/MLB%20The%20Show%2026",
+    store_url: "https://store.playstation.com/en-us/search/F1%2025",
   },
   {
-    title: "Wobbly Life",
-    original_price: "$24.99",
-    store_url: "https://store.playstation.com/en-us/search/Wobbly%20Life",
+    title: "Hunt: Showdown 1896",
+    original_price: "$29.99",
+    store_url: "https://store.playstation.com/en-us/search/Hunt%3A%20Showdown%201896",
   },
   {
-    title: "Chained Echoes",
-    original_price: "$24.99",
-    store_url: "https://store.playstation.com/en-us/search/Chained%20Echoes",
+    title: "Earth Defense Force: World Brothers 2",
+    original_price: "$49.99",
+    store_url: "https://store.playstation.com/en-us/search/Earth%20Defense%20Force%3A%20World%20Brothers%202",
   },
 ];
 
