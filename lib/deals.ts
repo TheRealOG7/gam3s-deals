@@ -262,22 +262,22 @@ export async function fetchEnebaDealsLive(): Promise<Deal[]> {
 
 // PS Plus Essential monthly free games — UPDATE first Tuesday of each month
 // Source: https://blog.playstation.com (search "PlayStation Plus Monthly Games for <Month>")
-// October 2026 (Oct 6 – Nov 2)
+// November 2026 (Nov 3 – Nov 30)
 const PS_PLUS_MONTHLY: PsGame[] = [
   {
-    title: "F1 25",
-    original_price: "$69.99",
-    store_url: "https://store.playstation.com/en-us/search/F1%2025",
+    title: "Dead Island 2",
+    original_price: "$59.99",
+    store_url: "https://store.playstation.com/en-us/search/Dead%20Island%202",
   },
   {
-    title: "Hunt: Showdown 1896",
+    title: "Tomb Raider IV – VI Remastered",
     original_price: "$29.99",
-    store_url: "https://store.playstation.com/en-us/search/Hunt%3A%20Showdown%201896",
+    store_url: "https://store.playstation.com/en-us/search/Tomb%20Raider%20IV%20%E2%80%93%20VI%20Remastered",
   },
   {
-    title: "Earth Defense Force: World Brothers 2",
-    original_price: "$49.99",
-    store_url: "https://store.playstation.com/en-us/search/Earth%20Defense%20Force%3A%20World%20Brothers%202",
+    title: "Monster Train 2",
+    original_price: "$24.99",
+    store_url: "https://store.playstation.com/en-us/search/Monster%20Train%202",
   },
 ];
 
