@@ -266,7 +266,7 @@ export async function fetchEnebaDealsLive(): Promise<Deal[]> {
 const PS_PLUS_MONTHLY: PsGame[] = [
   {
     title: "Dead Island 2",
-    original_price: "$59.99",
+    original_price: "$49.99",
     store_url: "https://store.playstation.com/en-us/search/Dead%20Island%202",
   },
   {
